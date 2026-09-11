@@ -1,0 +1,21 @@
+{
+  "name": "nekon-toolkit",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "license": "UNLICENSED",
+  "packageManager": "pnpm@10.18.3",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "node packages/tokens/scripts/build.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "check": "node scripts/verify.mjs",
+    "test:package": "node scripts/check-package.mjs",
+    "roadmap:check": "node scripts/roadmap.mjs --check",
+    "project:plan": "node scripts/sync-project.mjs --dry-run",
+    "project:sync": "node scripts/sync-project.mjs --apply",
+    "prepublishOnly": "node -e \"throw new Error('Publication disabled: release review required (#21).')\""
+  }
+}

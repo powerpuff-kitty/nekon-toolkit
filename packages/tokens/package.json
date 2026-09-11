@@ -1,0 +1,36 @@
+{
+  "name": "@nekon/tokens",
+  "version": "0.1.0-alpha.0",
+  "description": "Framework-independent NEKON semantic design tokens. Unpublished source preview.",
+  "private": true,
+  "type": "module",
+  "license": "UNLICENSED",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE.md"
+  ],
+  "sideEffects": [
+    "./dist/*.css"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./tokens.css": "./dist/tokens.css",
+    "./scoped.css": "./dist/scoped.css",
+    "./tokens.json": "./dist/tokens.json"
+  },
+  "types": "./dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/powerpuff-kitty/nekon-toolkit.git",
+    "directory": "packages/tokens"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "prepack": "node scripts/build.mjs",
+    "prepublishOnly": "node -e \"throw new Error('Publication disabled: release review required (#21).')\""
+  }
+}
