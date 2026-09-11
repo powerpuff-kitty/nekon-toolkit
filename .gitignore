@@ -7,3 +7,5 @@ coverage/
 !.env.example
 .dev.vars*
 .DS_Store
+.venv/
+__pycache__/

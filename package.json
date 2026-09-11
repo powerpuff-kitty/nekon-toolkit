@@ -16,6 +16,9 @@
     "roadmap:check": "node scripts/roadmap.mjs --check",
     "project:plan": "node scripts/sync-project.mjs --dry-run",
     "project:sync": "node scripts/sync-project.mjs --apply",
-    "prepublishOnly": "node -e \"throw new Error('Publication disabled: release review required (#21).')\""
+    "prepublishOnly": "node -e \"throw new Error('Publication disabled: release review required (#21).')\"",
+    "test:browser": "python3 scripts/check-browser.py",
+    "extraction:check": "node scripts/check-extraction.mjs --check",
+    "extraction:report": "node scripts/check-extraction.mjs"
   }
 }

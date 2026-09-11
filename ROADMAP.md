@@ -19,7 +19,7 @@ This is an implementation-plan snapshot, not live GitHub issue or Project state.
 | Issue | Work | Priority | Plan status | Dependencies |
 | --- | --- | --- | --- | --- |
 | [#2](https://github.com/powerpuff-kitty/nekon-toolkit/issues/2) | Public monorepo, agent guidance and local checks | P0 | in_progress | None |
-| [#3](https://github.com/powerpuff-kitty/nekon-toolkit/issues/3) | Dependency inventory, provenance and ownership cutover | P0 | planned | [#2](https://github.com/powerpuff-kitty/nekon-toolkit/issues/2) |
+| [#3](https://github.com/powerpuff-kitty/nekon-toolkit/issues/3) | Dependency inventory, provenance and ownership cutover | P0 | in_progress | [#2](https://github.com/powerpuff-kitty/nekon-toolkit/issues/2) |
 | [#4](https://github.com/powerpuff-kitty/nekon-toolkit/issues/4) | Framework-independent design tokens and scoped themes | P0 | in_progress | [#2](https://github.com/powerpuff-kitty/nekon-toolkit/issues/2) |
 
 ## M1

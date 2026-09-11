@@ -27,7 +27,7 @@
       "title": "Dependency inventory, provenance and ownership cutover",
       "priority": "P0",
       "phase": "M0",
-      "status": "planned",
+      "status": "in_progress",
       "dependencies": [
         2
       ]

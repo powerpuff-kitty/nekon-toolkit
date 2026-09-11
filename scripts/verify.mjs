@@ -25,6 +25,7 @@ function run(args) {
 run(['packages/tokens/scripts/build.mjs']);
 run(['packages/tokens/scripts/build.mjs', '--check']);
 run(['scripts/roadmap.mjs', '--check']);
+run(['scripts/check-extraction.mjs', '--check']);
 const tests = (await readdir(new URL('tests/', root))).filter(name => name.endsWith('.test.mjs')).sort();
 assert.ok(tests.length > 0, 'Tests must not be empty');
 run(['--test', ...tests.map(name => `tests/${name}`)]);

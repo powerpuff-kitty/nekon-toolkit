@@ -30,13 +30,25 @@ export function readMembership(response) {
   }
   const urls = new Set();
   for (const item of response.items) {
-    if (!item || typeof item !== 'object') throw new Error('Invalid Project item');
-    // Draft items have no issue URL and are left alone. Never treat item.url as
-    // a content URL; different gh versions may use it for a project view URL.
-    if (typeof item.content?.url === 'string') urls.add(item.content.url);
-    else if (['Issue', 'PullRequest'].includes(item.content?.type)) {
-      throw new Error('Project item lacks a content URL; refusing ambiguous writes');
+    const content = item?.content;
+    if (!item || typeof item !== 'object' || Array.isArray(item) ||
+        !content || typeof content !== 'object' || Array.isArray(content)) {
+      throw new Error('Invalid Project item; refusing ambiguous writes');
     }
+    // Only an explicitly typed draft may omit an issue URL. Unknown/redacted
+    // shapes are not evidence that an issue is missing from the board.
+    if (content.type === 'DraftIssue') {
+      if (content.url !== undefined && content.url !== null) {
+        throw new Error('Unexpected draft content URL; refusing ambiguous writes');
+      }
+      continue;
+    }
+    const segment = content.type === 'Issue' ? 'issues' : content.type === 'PullRequest' ? 'pull' : null;
+    const pattern = segment && new RegExp(`^https://github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/${segment}/[1-9][0-9]*$`);
+    if (!pattern || typeof content.url !== 'string' || !pattern.test(content.url) || urls.has(content.url)) {
+      throw new Error('Invalid or duplicate Project content URL; refusing ambiguous writes');
+    }
+    urls.add(content.url);
   }
   return urls;
 }
