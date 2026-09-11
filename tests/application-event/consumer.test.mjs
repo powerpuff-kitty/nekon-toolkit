@@ -149,7 +149,7 @@ test('deterministic 128-event corpus round trips byte-for-byte', () => {
 });
 test('package does not pretend to export unextracted SDK or runtime entry points', async () => {
   for (const specifier of ['@nekon/sdk', '@nekon/sdk/browser', '@nekon/client-runtime',
-    '@nekon/client-runtime/transport', '@nekon/sdk/src/application-event.ts']) {
+    '@nekon/sdk/src/application-event.ts']) {
     await assert.rejects(import(specifier), { code: 'ERR_PACKAGE_PATH_NOT_EXPORTED' });
   }
 });

@@ -4,90 +4,91 @@ Public developer tools for building private communication experiences on NEKON.
 
 ## Implemented source previews
 
-**Design foundations:** `@nekon/tokens`, with 91 existing semantic variables,
-scoped light/dark CSS, JSON/ESM/type exports, package checks and browser regressions.
+| Surface | Available here | Important boundary |
+| --- | --- | --- |
+| `@nekon/tokens` | 91 semantic tokens, scoped themes, CSS/JSON/ESM/types | No network or UI framework |
+| `@nekon/sdk/application-event` | Existing canonical custom-event encoding and inspection | Serialization is not encryption |
+| `@nekon/client-runtime/application-event` | Shared codec used by the SDK wrapper | No duplicate codec implementation |
+| `@nekon/client-runtime/transport` | HTTP/version headers, sessions, bounded responses and WebSocket ticket negotiation | No Room admission, MLS or full SDK client |
 
-**First SDK slice:** `@nekon/sdk/application-event`, backed by the unchanged
-`@nekon/client-runtime/application-event` codec. Encode/inspect structured custom
-events with optional reply/thread/replace/reaction relations. This slice has no
-WASM, Vue, network or DOM dependency. Its bytes are **not encrypted**.
+All packages remain unpublished, private and licensing-gated. The transport is
+staged from an unmerged upstream candidate, not a production-ready release. The
+full SDK root, enrollment, encrypted Room owner, Rust/WASM adapters and messenger
+migration are still pending. See [licensing](LICENSE.md) and [security](SECURITY.md).
 
-The full SDK root, network transport, enrollment, Room controllers and Rust/WASM
-adapters have not been extracted. There is no public messenger migration yet.
-These packages are unpublished, private and licensing-gated. This is neither a
-production-ready communication SDK nor a security audit; see [LICENSE.md](LICENSE.md).
+## Develop and verify
 
-## Develop
-
-Use Node.js 22+, npm, Git and the pinned pnpm 10.18.3. TypeScript 5.8.3 is a
-build-only dependency for this extraction slice; it does not ship with the SDK.
+Node 22+, npm, Git and pinned pnpm 10.18.3. TypeScript 5.8.3 is a build-only
+dependency for the current public extraction; it does not ship in runtime packages.
 
 ```sh
 pnpm install --frozen-lockfile
 pnpm check
 ```
 
-The event builder prefers the locally installed compiler. An already provisioned
-TypeScript 5.8.3 on PATH is supported for the documented Node/npm fallback:
+`pnpm check` retains the foundation lane and runs the combined extracted-client
+package lane. The latter builds from clean output directories, packs both real
+packages, installs them offline with lifecycle scripts disabled, checks exports
+and strict consumer types, and executes 122 event/transport cases plus the example.
+The builder removes partial outputs after compiler failure rather than leaving a
+stale package candidate. No command here deploys or publishes anything.
+
+For a pre-provisioned TypeScript 5.8.3 on PATH:
 
 ```sh
-node --test tests/application-event-source.test.mjs
+node --test tests/transport-source.test.mjs
 node scripts/verify-application-event.mjs
 ```
 
-The new lane checks identical-build output, packs both real packages, installs
-them into an isolated offline consumer, runs 63 consumer tests and strict
-TypeScript checks, and executes a synthetic example. It never publishes or
-connects to NEKON. `node scripts/verify.mjs` remains the foundation-only lane;
-`pnpm check` runs both lanes. See the [SDK package guide](packages/sdk/README.md).
+The filename is retained for compatibility; the package lane now verifies both
+event and transport subpaths. The latest checkpoint records which checks actually
+ran and which full-repository checks remain unverified.
 
 ## Browser checks
 
-Python 3.10+ and Playwright are optional contributor tools, not package runtime
-dependencies. With the pinned `scripts/browser-requirements.txt` installed and an
-already available Chromium executable:
+Python/Playwright are optional contributor tooling, not package dependencies.
+Use the pinned `scripts/browser-requirements.txt` and an already installed Chromium.
 
 ```sh
 node packages/tokens/scripts/build.mjs
 python3 scripts/check-browser.py --chromium /path/to/chromium
 node scripts/build-application-event.mjs
 python3 scripts/check-application-event-browser.py --chromium /path/to/chromium
+python3 scripts/check-transport-browser.py --chromium /path/to/chromium
 ```
 
-Both gates use offline in-memory pages, not URL navigation or browser-policy
-changes. Token checks cover themes and basic UI behavior. Event checks execute
-the actual emitted ESM modules through a browser import map, including the pinned
-upstream vector and buffer ownership. Neither is a complete cross-browser audit.
+The transport gate serves two unchanged emitted ESM modules in memory and uses
+synthetic HTTP/socket adapters. It does not navigate to or contact a live NEKON
+service. These checks do not establish TLS/CORS/cookie interoperability or a
+cross-browser security audit.
 
-## Examples and architecture
+## Guides, examples and roadmap
 
-Open `examples/tokens/index.html` after the token build in a permitted browser.
-The synthetic `examples/application-event/example.mjs` is executed automatically
-against the isolated package installation by the event verification lane.
+[SDK event guide](packages/sdk/README.md) · [Transport guide](packages/client-runtime/README.md) ·
+[Token guide](packages/tokens/README.md) · [Architecture](ARCHITECTURE.md) ·
+[Design](DESIGN.md) · [Roadmap](ROADMAP.md) · [Contributing](CONTRIBUTING.md) ·
+[Latest extraction checkpoint](docs/transport-extraction.md)
 
-[Architecture](ARCHITECTURE.md) · [Design guidance](DESIGN.md) ·
-[Roadmap](ROADMAP.md) · [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) ·
-[SDK extraction checkpoint](docs/application-event-extraction.md)
+Open `examples/tokens/index.html` after building tokens. The synthetic event
+example runs automatically against installed package exports in the package lane.
 
-The hosted service, billing, control-plane application and first-party messenger
-remain in the separate `nekon` repository. Staged source copies remain unchanged
-until a coordinated ownership cutover; no competing SDK or crypto implementation
-is being created. The existing [declared dependency inventory](docs/extraction-dependencies.md)
-remains incomplete for the full SDK. This first two-file codec closure is complete
-at the source/build level, not a substitute for the full SDK or live network tests.
+The hosted service, billing, control plane and first-party messenger remain in
+`nekon`. Public source staging does not transfer production ownership. Event and
+transport source digests are recorded; reconcile upstream changes before cutover
+rather than maintaining divergent implementations. Full dependency review and
+real two-client encrypted interoperability remain release gates.
 
 ## Project 14
 
-[Roadmap issue #1](https://github.com/powerpuff-kitty/nekon-toolkit/issues/1)
-indexes 30 work items. Their creation is verified; membership in
-[Project 14](https://github.com/users/powerpuff-kitty/projects/14) is still unverified.
+[Roadmap issue #1](https://github.com/powerpuff-kitty/nekon-toolkit/issues/1) indexes
+30 work items. Repository issues exist; live Project 14 membership/fields remain
+unverified. The helper only changes membership when explicitly run with an
+authenticated GitHub CLI authorized for the board:
 
 ```sh
 node scripts/sync-project.mjs --dry-run
-# Only with an authenticated gh CLI authorized for Project 14:
 node scripts/sync-project.mjs --apply
 ```
 
-The helper adds missing issues and verifies membership without changing existing
-fields. It rejects malformed/ambiguous inventories before writes. See
-[Project synchronization](docs/project-sync.md) for its limits.
+It preserves existing fields and rejects ambiguous inventories before writes.
+See [Project synchronization](docs/project-sync.md). No GitHub Actions are added.

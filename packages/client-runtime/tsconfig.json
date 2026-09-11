@@ -20,6 +20,9 @@
     "forceConsistentCasingInFileNames": true
   },
   "include": [
-    "src/application-event-payload.ts"
+    "src/application-event-payload.ts",
+    "src/client-transport.ts",
+    "src/client-request-transport.ts",
+    "src/bounded-response.ts"
   ]
 }

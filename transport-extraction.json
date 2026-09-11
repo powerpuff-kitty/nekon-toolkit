@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "sourceRepository": "powerpuff-kitty/nekon",
+  "sourceCommit": "ebeb424c386930b32fd97d7adc8a68281e817fb8",
+  "sourceStatus": "unmerged candidate; not deployed",
+  "status": "staged-upstream-candidate",
+  "publicationAllowed": false,
+  "ownership": "private consumer not migrated; reconcile upstream and toolkit together",
+  "files": [
+    {
+      "path": "packages/client-runtime/src/client-transport.ts",
+      "bytes": 17695,
+      "gitBlob": "a17ba8e60a668c34cc3847dfdda9ef6cf1ad0045",
+      "sha256": "c5b72a46eeeaa3247e40e042f0d4952a5493c8385a1976ae1b00634a938d0051"
+    },
+    {
+      "path": "packages/client-runtime/src/client-request-transport.ts",
+      "bytes": 629,
+      "gitBlob": "876a0e02793f671dea795ebc3b0c7fc82b2b1b2e",
+      "sha256": "41826c6f141b9afb4b4054f1af4e1f8af701523d56889fdec2fed7ff2703acbc"
+    },
+    {
+      "path": "packages/client-runtime/src/bounded-response.ts",
+      "bytes": 3212,
+      "gitBlob": "1ec5732b1e0c75807c1f99d958ccf2b8394602ab",
+      "sha256": "3bc0c590151027f1cdd3d26c83af0ce107e90e5c6c8a6b6082a4456b106f0852"
+    }
+  ]
+}
