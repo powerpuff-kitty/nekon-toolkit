@@ -1,0 +1,36 @@
+{
+  "name": "@nekon/sdk",
+  "version": "0.1.0-extraction.0",
+  "private": true,
+  "type": "module",
+  "license": "UNLICENSED",
+  "description": "Unpublished structured application-event extraction slice; not a complete communication SDK.",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE.md"
+  ],
+  "sideEffects": false,
+  "exports": {
+    "./application-event": {
+      "types": "./dist/application-event.d.ts",
+      "import": "./dist/application-event.js"
+    }
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/powerpuff-kitty/nekon-toolkit.git",
+    "directory": "packages/sdk"
+  },
+  "scripts": {
+    "build": "node ../../scripts/build-application-event.mjs",
+    "prepack": "node ../../scripts/build-application-event.mjs",
+    "prepublishOnly": "node -e \"throw new Error('Publication disabled: release review required (#21).')\""
+  },
+  "dependencies": {
+    "@nekon/client-runtime": "0.1.0-extraction.0"
+  }
+}

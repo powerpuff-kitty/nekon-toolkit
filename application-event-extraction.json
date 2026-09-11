@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "sourceRepository": "powerpuff-kitty/nekon",
+  "sourceCommit": "2b5e093c8663014dde37db98b8d3e7941b33f823",
+  "status": "staged-unchanged-source",
+  "ownership": "private consumer not migrated; production authority remains in nekon",
+  "publicationAllowed": false,
+  "sourceClosure": "two files; SDK wrapper imports only the included application-event codec",
+  "notIncluded": [
+    "transport",
+    "Room controller",
+    "MLS",
+    "account enrollment",
+    "Rust/WASM",
+    "full SDK root export"
+  ],
+  "files": [
+    {
+      "sourcePath": "packages/sdk/src/application-event.ts",
+      "targetPath": "packages/sdk/src/application-event.ts",
+      "gitBlob": "5bd30392e6220119870fdb9f6fa15d43fe92d353",
+      "sha256": "302d30b47378f4565a61608d9381323428c110e8e8c170b58740be33ca6949f2",
+      "bytes": 2659
+    },
+    {
+      "sourcePath": "packages/client-runtime/src/application-event-payload.ts",
+      "targetPath": "packages/client-runtime/src/application-event-payload.ts",
+      "gitBlob": "6e948d7571243b1f4820aadf7d78cf1ebfc82a68",
+      "sha256": "90181dbe82805de01339bc82817154116f87b466dde8bf685242950853e8f5cf",
+      "bytes": 8802
+    },
+    {
+      "sourcePath": "tests/protocol-vectors/v1-application-event-payload.hex",
+      "targetPath": "tests/protocol-vectors/v1-application-event-payload.hex",
+      "gitBlob": "80c954b54c61544cdb86b0af89558ab23a681549",
+      "sha256": "45e32b45ea470e3ce48d6c76154502fc12906d9b4d9a825f7cf0568b2bdfaaae",
+      "bytes": 367
+    }
+  ]
+}
