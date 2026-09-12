@@ -2,6 +2,17 @@
 
 Public developer tools for building private communication experiences on NEKON.
 
+## Local developer documentation
+
+Run `npm run build:docs` with the pinned toolchain to generate
+`docs/portal/dist/index.html` and its machine-readable `api.json`. The portal
+includes local search, guides, exact maintained examples, and references generated
+from all supported package exports and emitted declarations. It labels execution
+contexts, credentials, unpublished packages and incomplete production adapters.
+No network, login, hosting or publication is added. See [portal authoring and
+verification](docs/portal/README.md). `npm run check:docs` exercises the generator
+and the full installed-client check; the default root check retains these gates.
+
 ## Local developer workbench
 
 ```sh

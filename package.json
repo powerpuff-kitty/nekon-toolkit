@@ -24,7 +24,10 @@
     "check:events": "node --test tests/application-event-source.test.mjs && node scripts/verify-application-event.mjs",
     "test:events:browser": "python3 scripts/check-application-event-browser.py",
     "check:workbench": "node scripts/verify-application-event.mjs",
-    "test:workbench:browser": "python3 scripts/check-developer-workbench-browser.py"
+    "test:workbench:browser": "python3 scripts/check-developer-workbench-browser.py",
+    "build:docs": "node packages/tokens/scripts/build.mjs && node scripts/build-application-event.mjs && node scripts/build-docs-portal.mjs",
+    "check:docs": "node --test tests/docs-portal.test.mjs && node scripts/verify-application-event.mjs",
+    "test:docs:browser": "python3 scripts/check-docs-portal-browser.py"
   },
   "devDependencies": {
     "typescript": "5.8.3"
