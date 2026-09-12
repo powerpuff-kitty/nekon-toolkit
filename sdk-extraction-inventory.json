@@ -1,0 +1,226 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "repository": "powerpuff-kitty/nekon",
+    "commit": "2b5e093c8663014dde37db98b8d3e7941b33f823"
+  },
+  "reviewLevel": "declared-dependencies-only",
+  "publicationAllowed": false,
+  "evidence": [
+    {
+      "id": "sdk",
+      "path": "packages/sdk",
+      "kind": "tree",
+      "sha": "39d7f347893d03b04599b00fad98afcbf94ff0f6"
+    },
+    {
+      "id": "runtime",
+      "path": "packages/client-runtime",
+      "kind": "tree",
+      "sha": "6a7cec51fee0bc4cb7d6216cd604449514d96e13"
+    },
+    {
+      "id": "sdk-vite",
+      "path": "packages/sdk/vite.config.ts",
+      "kind": "blob",
+      "sha": "88cab341c57bbb7893562b979ba0d63e754c9520"
+    },
+    {
+      "id": "sdk-tsconfig",
+      "path": "packages/sdk/tsconfig.json",
+      "kind": "blob",
+      "sha": "45ca2e23ba7ece49404e94897688249aaa2570ff"
+    },
+    {
+      "id": "sdk-release",
+      "path": "packages/sdk/scripts/prepublish-release-gate.mjs",
+      "kind": "blob",
+      "sha": "095cd78b0692d164a1ffdb63eed44f85c5200994"
+    },
+    {
+      "id": "tsconfig",
+      "path": "tsconfig.base.json",
+      "kind": "blob",
+      "sha": "dc7d3dd2f4a35ec9190e033b18707fc6d3b6d23e"
+    },
+    {
+      "id": "cargo",
+      "path": "Cargo.toml",
+      "kind": "blob",
+      "sha": "14277bef6ff810322c993930812ec37ca95cc72c"
+    },
+    {
+      "id": "call-build",
+      "path": "scripts/build-call-wasm.sh",
+      "kind": "blob",
+      "sha": "bfb99d422a119246b6c6e0b0779b84129b383b5a"
+    },
+    {
+      "id": "wasm-size",
+      "path": "scripts/check-wasm-size.mjs",
+      "kind": "blob",
+      "sha": "8bbcbc6be868a2f246bb2e3159915184554c51a3"
+    },
+    {
+      "id": "core",
+      "path": "crates/nekon-core/Cargo.toml",
+      "kind": "blob",
+      "sha": "1e788087109d9278048aecfb5d9a06305d507cc5"
+    },
+    {
+      "id": "protocol",
+      "path": "crates/nekon-protocol/Cargo.toml",
+      "kind": "blob",
+      "sha": "e608a8ecca1a43480bccfcad20e6abb52dd5bdda"
+    },
+    {
+      "id": "crypto",
+      "path": "crates/nekon-crypto/Cargo.toml",
+      "kind": "blob",
+      "sha": "f8e4a86760605a01a15e816c64b2b99fb94a8a70"
+    },
+    {
+      "id": "wasm",
+      "path": "crates/nekon-wasm/Cargo.toml",
+      "kind": "blob",
+      "sha": "b6dadad461f2638308725ef18a38be0d52c553a8"
+    },
+    {
+      "id": "vault",
+      "path": "crates/nekon-vault-kdf-wasm/Cargo.toml",
+      "kind": "blob",
+      "sha": "26f25d03dcc1859e1d8d72d08961756cdc59bff8"
+    },
+    {
+      "id": "guest",
+      "path": "crates/nekon-guest-wasm/Cargo.toml",
+      "kind": "blob",
+      "sha": "6e5e65e84433d5ab778f20c149eac406a372a24d"
+    },
+    {
+      "id": "call",
+      "path": "crates/nekon-call-wasm/Cargo.toml",
+      "kind": "blob",
+      "sha": "dd061feecf0277fc859c09cdbca799e185feeaad"
+    }
+  ],
+  "roots": [
+    "sdk"
+  ],
+  "sharedInputs": [
+    "tsconfig",
+    "cargo"
+  ],
+  "units": [
+    {
+      "id": "sdk",
+      "path": "packages/sdk",
+      "dependencies": [
+        "runtime"
+      ],
+      "evidence": [
+        "sdk",
+        "sdk-vite",
+        "sdk-tsconfig",
+        "sdk-release"
+      ]
+    },
+    {
+      "id": "runtime",
+      "path": "packages/client-runtime",
+      "dependencies": [
+        "wasm",
+        "vault",
+        "guest",
+        "call"
+      ],
+      "evidence": [
+        "runtime",
+        "call-build",
+        "wasm-size"
+      ]
+    },
+    {
+      "id": "core",
+      "path": "crates/nekon-core",
+      "dependencies": [],
+      "evidence": [
+        "core"
+      ]
+    },
+    {
+      "id": "protocol",
+      "path": "crates/nekon-protocol",
+      "dependencies": [
+        "core"
+      ],
+      "evidence": [
+        "protocol"
+      ]
+    },
+    {
+      "id": "crypto",
+      "path": "crates/nekon-crypto",
+      "dependencies": [
+        "core",
+        "protocol"
+      ],
+      "evidence": [
+        "crypto"
+      ]
+    },
+    {
+      "id": "wasm",
+      "path": "crates/nekon-wasm",
+      "dependencies": [
+        "core",
+        "crypto",
+        "protocol"
+      ],
+      "evidence": [
+        "wasm"
+      ]
+    },
+    {
+      "id": "vault",
+      "path": "crates/nekon-vault-kdf-wasm",
+      "dependencies": [
+        "crypto"
+      ],
+      "evidence": [
+        "vault"
+      ]
+    },
+    {
+      "id": "guest",
+      "path": "crates/nekon-guest-wasm",
+      "dependencies": [
+        "crypto",
+        "protocol"
+      ],
+      "evidence": [
+        "guest"
+      ]
+    },
+    {
+      "id": "call",
+      "path": "crates/nekon-call-wasm",
+      "dependencies": [
+        "core",
+        "crypto",
+        "protocol"
+      ],
+      "evidence": [
+        "call"
+      ]
+    }
+  ],
+  "blockers": [
+    "Full source import/include/worker/asset and test-fixture closure has not been reviewed.",
+    "Cargo and pnpm lockfiles, toolchain pins, inherited build configuration and third-party licenses still require extraction review.",
+    "The current runtime build includes call and guest WASM; retain existing feature boundaries or split the build with explicit compatibility tests.",
+    "Root build configuration must be recreated for the public workspace; do not copy private workspace members blindly.",
+    "Unmerged platform PRs, private-consumer cutover and SDK-only two-client security tests remain unverified.",
+    "No SDK source ownership transfer, registry publication or security certification is authorized by this inventory."
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "repository": "powerpuff-kitty/nekon",
+    "commit": "2b5e093c8663014dde37db98b8d3e7941b33f823",
+    "path": "packages/ui/src/tokens.css",
+    "gitBlob": "038b72c5f4ee865e5b9ba80d7f2d5acca12dfb40"
+  },
+  "snapshot": {
+    "path": "packages/tokens/src/tokens.json",
+    "sha256": "a4065bb0d8b7010e24a5f9af762e12f34c5419ffaf2ecb36b69292ae34589fd5",
+    "baseTokenCount": 91,
+    "darkOverrideCount": 8
+  },
+  "migrationStatus": "preview-only; private consumer not migrated",
+  "excluded": [
+    "global focus/control rules",
+    "logo/mask assets",
+    "font files",
+    "native color-scheme property",
+    "private git history"
+  ],
+  "fullSdkDependencyAudit": "pending issue #3",
+  "licensing": "pending issue #28"
+}

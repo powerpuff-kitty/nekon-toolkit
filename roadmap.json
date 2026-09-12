@@ -1,0 +1,362 @@
+{
+  "schemaVersion": 1,
+  "repository": "powerpuff-kitty/nekon-toolkit",
+  "project": {
+    "owner": "powerpuff-kitty",
+    "number": 14
+  },
+  "items": [
+    {
+      "issue": 1,
+      "title": "Public developer-toolkit roadmap",
+      "priority": "P0",
+      "phase": "Roadmap",
+      "status": "planned",
+      "dependencies": []
+    },
+    {
+      "issue": 2,
+      "title": "Public monorepo, agent guidance and local checks",
+      "priority": "P0",
+      "phase": "M0",
+      "status": "in_progress",
+      "dependencies": []
+    },
+    {
+      "issue": 3,
+      "title": "Dependency inventory, provenance and ownership cutover",
+      "priority": "P0",
+      "phase": "M0",
+      "status": "in_progress",
+      "dependencies": [
+        2
+      ]
+    },
+    {
+      "issue": 4,
+      "title": "Framework-independent design tokens and scoped themes",
+      "priority": "P0",
+      "phase": "M0",
+      "status": "in_progress",
+      "dependencies": [
+        2
+      ]
+    },
+    {
+      "issue": 5,
+      "title": "Canonical contracts and portable Rust/WASM closure",
+      "priority": "P0",
+      "phase": "M1",
+      "status": "planned",
+      "dependencies": [
+        3
+      ]
+    },
+    {
+      "issue": 6,
+      "title": "Existing JavaScript SDK and client-runtime extraction",
+      "priority": "P0",
+      "phase": "M1",
+      "status": "planned",
+      "dependencies": [
+        5
+      ]
+    },
+    {
+      "issue": 7,
+      "title": "Server helpers and bring-your-own-auth authorization",
+      "priority": "P0",
+      "phase": "M1",
+      "status": "planned",
+      "dependencies": [
+        5,
+        6
+      ]
+    },
+    {
+      "issue": 8,
+      "title": "Headless Vue 3 bindings",
+      "priority": "P0",
+      "phase": "M1",
+      "status": "planned",
+      "dependencies": [
+        6
+      ]
+    },
+    {
+      "issue": 9,
+      "title": "UI primitives and localization",
+      "priority": "P1",
+      "phase": "M1",
+      "status": "planned",
+      "dependencies": [
+        3,
+        4
+      ]
+    },
+    {
+      "issue": 10,
+      "title": "Identity, device, invitation and privacy components",
+      "priority": "P1",
+      "phase": "M1",
+      "status": "planned",
+      "dependencies": [
+        8,
+        9
+      ]
+    },
+    {
+      "issue": 11,
+      "title": "Communication and structured-interaction blocks",
+      "priority": "P1",
+      "phase": "M1",
+      "status": "planned",
+      "dependencies": [
+        8,
+        9,
+        10
+      ]
+    },
+    {
+      "issue": 12,
+      "title": "SDK-only messenger and independent-client validation",
+      "priority": "P0",
+      "phase": "M1",
+      "status": "planned",
+      "dependencies": [
+        6,
+        8
+      ]
+    },
+    {
+      "issue": 13,
+      "title": "Public docs, quickstarts and generated references",
+      "priority": "P0",
+      "phase": "M1",
+      "status": "planned",
+      "dependencies": [
+        2
+      ]
+    },
+    {
+      "issue": 14,
+      "title": "Vanilla, Vue and Lahaku-style starter applications",
+      "priority": "P1",
+      "phase": "M1",
+      "status": "planned",
+      "dependencies": [
+        6,
+        7,
+        8,
+        13
+      ]
+    },
+    {
+      "issue": 15,
+      "title": "Cloud onboarding contracts and console components",
+      "priority": "P1",
+      "phase": "M1",
+      "status": "planned",
+      "dependencies": [
+        7,
+        9
+      ]
+    },
+    {
+      "issue": 16,
+      "title": "Storybook and accessibility regression suite",
+      "priority": "P1",
+      "phase": "M2",
+      "status": "planned",
+      "dependencies": [
+        9,
+        10,
+        11
+      ]
+    },
+    {
+      "issue": 17,
+      "title": "Figma design kit and component metadata",
+      "priority": "P2",
+      "phase": "M2",
+      "status": "planned",
+      "dependencies": [
+        4,
+        9,
+        16
+      ]
+    },
+    {
+      "issue": 18,
+      "title": "CLI scaffolding, linking and doctor",
+      "priority": "P1",
+      "phase": "M2",
+      "status": "planned",
+      "dependencies": [
+        6,
+        7,
+        14,
+        15
+      ]
+    },
+    {
+      "issue": 19,
+      "title": "Cloud sandbox and synthetic playground",
+      "priority": "P1",
+      "phase": "M2",
+      "status": "planned",
+      "dependencies": [
+        6,
+        14,
+        15
+      ]
+    },
+    {
+      "issue": 20,
+      "title": "Deterministic tests and failure injection",
+      "priority": "P1",
+      "phase": "M2",
+      "status": "planned",
+      "dependencies": [
+        6,
+        7
+      ]
+    },
+    {
+      "issue": 21,
+      "title": "Package verification and controlled releases",
+      "priority": "P0",
+      "phase": "M1",
+      "status": "planned",
+      "dependencies": [
+        2
+      ]
+    },
+    {
+      "issue": 22,
+      "title": "Versioning, compatibility and migration policy",
+      "priority": "P1",
+      "phase": "M2",
+      "status": "planned",
+      "dependencies": [
+        5,
+        6,
+        13,
+        21
+      ]
+    },
+    {
+      "issue": 23,
+      "title": "AI integration skills and machine-readable context",
+      "priority": "P1",
+      "phase": "M2",
+      "status": "planned",
+      "dependencies": [
+        6,
+        13,
+        14
+      ]
+    },
+    {
+      "issue": 24,
+      "title": "Documentation MCP and scoped administration",
+      "priority": "P2",
+      "phase": "M3",
+      "status": "planned",
+      "dependencies": [
+        7,
+        13,
+        23
+      ]
+    },
+    {
+      "issue": 25,
+      "title": "React bindings and optional components",
+      "priority": "P2",
+      "phase": "M2",
+      "status": "planned",
+      "dependencies": [
+        6,
+        8,
+        9
+      ]
+    },
+    {
+      "issue": 26,
+      "title": "Safe script/iframe widgets",
+      "priority": "P2",
+      "phase": "M3",
+      "status": "planned",
+      "dependencies": [
+        6,
+        10,
+        11,
+        20
+      ]
+    },
+    {
+      "issue": 27,
+      "title": "Private diagnostics, quotas and operational views",
+      "priority": "P1",
+      "phase": "M3",
+      "status": "planned",
+      "dependencies": [
+        7,
+        15,
+        20
+      ]
+    },
+    {
+      "issue": 28,
+      "title": "Trust, licensing and production-evaluation docs",
+      "priority": "P1",
+      "phase": "M2",
+      "status": "planned",
+      "dependencies": [
+        3,
+        13,
+        21
+      ]
+    },
+    {
+      "issue": 29,
+      "title": "Integration adapters and extension contracts",
+      "priority": "P2",
+      "phase": "M3",
+      "status": "planned",
+      "dependencies": [
+        6,
+        7,
+        14,
+        20
+      ]
+    },
+    {
+      "issue": 30,
+      "title": "Voice/video, agent and device tooling",
+      "priority": "P2",
+      "phase": "Deferred",
+      "status": "deferred",
+      "dependencies": [
+        6,
+        10,
+        11,
+        20
+      ]
+    },
+    {
+      "issue": 31,
+      "title": "New native distribution and on-premises feasibility",
+      "priority": "P3",
+      "phase": "Deferred",
+      "status": "deferred",
+      "dependencies": [
+        5,
+        6,
+        12,
+        21,
+        22
+      ]
+    }
+  ]
+}

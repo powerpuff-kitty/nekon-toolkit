@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>NEKON Toolkit — scoped token preview</title>
+  <link rel="stylesheet" href="../../packages/tokens/dist/scoped.css">
+  <style>
+    body { margin: 0; background: #eeefec; color: #19201c; font: 1rem/1.6 system-ui, sans-serif; }
+    main { max-width: 76rem; margin: auto; padding: 3rem 1.5rem; }
+    h1 { font-size: clamp(2.5rem, 7vw, 5rem); line-height: 1.02; letter-spacing: -.04em; margin: 1rem 0; }
+    header p { max-width: 46rem; }
+    .eyebrow { text-transform: uppercase; letter-spacing: .12em; font-size: .75rem; }
+    .samples { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 2.5rem; }
+    .sample { padding: var(--nk-space-6); background: var(--nk-color-canvas); color: var(--nk-color-text); border: 1px solid var(--nk-color-border-strong); border-radius: var(--nk-radius-card); font-family: var(--nk-font-sans); }
+    [data-nk-theme="light"] { color-scheme: light; }
+    [data-nk-theme="dark"] { color-scheme: dark; }
+    .sample h2 { font-size: var(--nk-font-size-xl); line-height: var(--nk-line-heading); }
+    .sample p { color: var(--nk-color-text-muted); }
+    .panel { padding: var(--nk-space-4); margin: var(--nk-space-4) 0; background: var(--nk-color-surface); border: 1px solid var(--nk-color-border); border-radius: var(--nk-radius-control); }
+    .sample button, .sample input { box-sizing: border-box; font: inherit; border-radius: var(--nk-radius-control); min-height: var(--nk-control-height); padding: 0 var(--nk-space-4); }
+    .sample input { width: 100%; background: var(--nk-color-surface); color: var(--nk-color-text); border: 1px solid var(--nk-color-border-strong); }
+    .sample button { background: var(--nk-color-action-primary); color: var(--nk-color-action-primary-contrast); border: 1px solid var(--nk-color-action-primary); margin-top: var(--nk-space-4); }
+    .sample :focus-visible { outline: 3px solid var(--nk-color-accent); outline-offset: 4px; }
+    .sample label { display: block; margin-bottom: var(--nk-space-2); }
+    .sample .nested { margin-top: var(--nk-space-6); padding: var(--nk-space-4); border-radius: var(--nk-radius-control); }
+    footer { margin-top: 2rem; border-top: 1px solid #a8b0aa; padding-top: 1rem; }
+    code { font-family: ui-monospace, monospace; overflow-wrap: anywhere; }
+    @media (max-width: 48rem) { .samples { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="eyebrow">NEKON / Developer toolkit / Foundation preview</div>
+      <h1>Your interface.<br>Shared foundations.</h1>
+      <p>91 semantic tokens. Explicit light and dark scopes. The host page keeps its own styling. This example uses local CSS and synthetic content; it does not connect to NEKON.</p>
+    </header>
+    <div class="samples">
+      <section class="sample" data-nk-theme="light" aria-labelledby="light-heading">
+        <div class="eyebrow">01 / Light scope</div>
+        <h2 id="light-heading">A small, reusable foundation.</h2>
+        <p>Typography, spacing, geometry and semantic colors. No component framework required.</p>
+        <div class="panel">Example status: not connected. A visual theme does not establish identity, encryption or authorization.</div>
+        <label for="light-input">Synthetic label</label>
+        <input id="light-input" value="A developer's own application">
+        <button type="button" title="Visual and keyboard-focus sample only">Example control</button>
+      </section>
+      <section class="sample" data-nk-theme="dark" aria-labelledby="dark-heading">
+        <div class="eyebrow">02 / Dark scope</div>
+        <h2 id="dark-heading">Dark without taking over.</h2>
+        <p>Every derived variable resolves from this scope's seeds. No global focus reset or remote asset is imported.</p>
+        <div class="panel">Use <code>var(--nk-color-surface)</code> rather than hardcoded component colors.</div>
+        <section class="sample nested" data-nk-theme="light" aria-label="Nested light scope">
+          <strong>Light inside dark.</strong>
+          <p>This nested scope resets its own semantic variables.</p>
+        </section>
+      </section>
+    </div>
+    <footer>Source preview · No packages published · No bundled fonts · No accessibility certification claimed</footer>
+  </main>
+</body>
+</html>
