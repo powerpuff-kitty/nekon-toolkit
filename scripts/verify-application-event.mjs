@@ -51,12 +51,13 @@ try {
   const modules = {
     'client-runtime': ['application-event-payload', 'client-transport', 'client-request-transport', 'bounded-response',
       'application-device-authorization-api-resource', 'client-binary-codec', 'client-api-error', 'client-response-validation',
-      'application-enrollment', 'application-enrollment-coordinator', 'application-enrollment-validation', 'application-enrollment-types'],
-    sdk: ['application-event', 'application-authorization', 'application-enrollment'],
+      'application-enrollment', 'application-enrollment-coordinator', 'application-enrollment-validation', 'application-enrollment-types',
+      'application-enrollment-storage', 'application-enrollment-bound-vault'],
+    sdk: ['application-event', 'application-authorization', 'application-enrollment', 'application-enrollment-storage'],
   };
-  // Four enrollment modules are added to the authorization/transport artifact.
+  // The optional bound-storage adapter adds two runtime modules and declarations.
   // This package-size budget is unrelated to HTTP or security limits.
-  const budgets = { 'client-runtime': 96 * 1024, sdk: 48000 };
+  const budgets = { 'client-runtime': 112 * 1024, sdk: 48000 };
   let fileCount = 0;
   for (const [leaf, names] of Object.entries(modules)) {
     const packed = JSON.parse(execute('npm', ['pack', '--ignore-scripts', '--json', '--pack-destination', directory], rootFile(`packages/${leaf}`), true));
@@ -78,8 +79,8 @@ try {
     assert.equal(pkg.license, 'UNLICENSED');
     assert.equal(pkg.sideEffects, false);
     assert.deepEqual(Object.keys(pkg.exports), leaf === 'sdk'
-      ? ['./application-event', './application-authorization', './application-enrollment']
-      : ['./application-event', './transport', './application-authorization', './application-enrollment']);
+      ? ['./application-event', './application-authorization', './application-enrollment', './application-enrollment-storage']
+      : ['./application-event', './transport', './application-authorization', './application-enrollment', './application-enrollment-storage']);
     assert.deepEqual(pkg.dependencies ?? {}, leaf === 'sdk' ? { '@nekon/client-runtime': '0.1.0-extraction.0' } : {});
     assert.match(pkg.scripts.prepublishOnly, /Publication disabled/);
   }
@@ -96,7 +97,8 @@ try {
     ['examples/application-authorization/example.mjs', 'authorization-example.mjs'],
   ];
   await cp(rootFile('tests/enrollment'), join(directory, 'enrollment'), { recursive: true });
-  const tests = ['consumer.test.mjs', 'transport.test.mjs', 'lifecycle.cases.mjs', 'authorization.test.mjs', 'enrollment/consumer.test.mjs'];
+  await cp(rootFile('tests/enrollment-storage'), join(directory, 'enrollment-storage'), { recursive: true });
+  const tests = ['consumer.test.mjs', 'transport.test.mjs', 'lifecycle.cases.mjs', 'authorization.test.mjs', 'enrollment/consumer.test.mjs', 'enrollment-storage/consumer.test.mjs'];
   if (args[0] === '--http') {
     copies.push(['tests/application-authorization/http.cases.mjs', 'authorization-http.cases.mjs']);
     tests.push('authorization-http.cases.mjs');
@@ -107,7 +109,7 @@ try {
   execute(existsSync(localTsc) ? process.execPath : 'tsc', [
     ...(existsSync(localTsc) ? [localTsc] : []), '--noEmit', '--strict', '--skipLibCheck', 'false',
     '--target', 'ES2024', '--module', 'NodeNext', '--moduleResolution', 'NodeNext',
-    'consumer.ts', 'transport.ts', 'authorization.ts', 'enrollment/consumer.ts',
+    'consumer.ts', 'transport.ts', 'authorization.ts', 'enrollment/consumer.ts', 'enrollment-storage/consumer.ts',
   ]);
   for (const example of ['example.mjs', 'authorization-example.mjs']) {
     console.log(execute(process.execPath, [example]).trim());
@@ -118,10 +120,12 @@ try {
     const api = await import('@nekon/sdk/application-event');
     const transport = await import('@nekon/client-runtime/transport');
     const authorization = await import('@nekon/sdk/application-authorization');
+    const storage = await import('@nekon/sdk/application-enrollment-storage');
     if (api.NEKON_APPLICATION_EVENT_SCHEMA !== 'nekon.application-event/1' ||
         typeof transport.NekonTransport !== 'function' ||
-        typeof authorization.ApplicationDeviceAuthorizationApiResource !== 'function') throw new Error('Unexpected exports');
-    for (const name of ['bounded-response', 'client-binary-codec', 'client-api-error', 'client-response-validation', 'application-enrollment-validation', 'application-enrollment-types', 'application-enrollment-coordinator']) {
+        typeof authorization.ApplicationDeviceAuthorizationApiResource !== 'function' ||
+        typeof storage.openBoundApplicationEnrollmentVault !== 'function') throw new Error('Unexpected exports');
+    for (const name of ['bounded-response', 'client-binary-codec', 'client-api-error', 'client-response-validation', 'application-enrollment-validation', 'application-enrollment-types', 'application-enrollment-coordinator', 'application-enrollment-bound-vault']) {
       for (const specifier of ['@nekon/client-runtime/dist/' + name + '.js', '@nekon/client-runtime/' + name]) {
         try { await import(specifier); throw new Error('Private implementation exported'); }
         catch (error) { if (error.code !== 'ERR_PACKAGE_PATH_NOT_EXPORTED') throw error; }

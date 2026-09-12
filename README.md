@@ -11,6 +11,7 @@ Public developer tools for building private communication experiences on NEKON.
 | `@nekon/client-runtime/transport` | HTTP, sessions, bounded responses and WebSocket tickets | No verified Room admission or MLS |
 | `@nekon/sdk/application-authorization` | Existing prepared-request/redemption API | No key generation or durable enrollment ownership |
 | `@nekon/sdk/application-enrollment` | Existing resumable four-state coordinator and typed ports | Concrete encrypted store/device/activation adapters are required |
+| `@nekon/sdk/application-enrollment-storage` | Opt-in service/device-bound store adapter | Proposed V2 envelope; host vault owns encryption and CAS |
 
 The SDK entries use the same implementations exposed by their corresponding
 runtime subpaths. Packages are private, unpublished and licensing-gated. Sources
@@ -43,11 +44,12 @@ node scripts/check-enrollment.mjs
 
 This compiles the real new sources and public export barrels into a temporary
 module-resolution harness. It is not a substitute for the full installed-tarball
-or repository checks. The [latest checkpoint](docs/application-enrollment-extraction.md)
+or repository checks. The [latest checkpoint](docs/application-enrollment-storage.md)
 clearly distinguishes checks actually run from those still pending.
 
 ## Guides and examples
 
+[Enrollment storage](docs/application-enrollment-storage.md) ·
 [Enrollment coordinator](docs/application-enrollment-extraction.md) ·
 [SDK guide](packages/sdk/README.md) · [Runtime guide](packages/client-runtime/README.md) ·
 [Authorization extraction](docs/application-authorization-extraction.md) ·

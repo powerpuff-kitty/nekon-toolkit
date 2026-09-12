@@ -27,12 +27,16 @@
       ],
       "@nekon/client-runtime/application-enrollment": [
         "../client-runtime/dist/application-enrollment.d.ts"
+      ],
+      "@nekon/client-runtime/application-enrollment-storage": [
+        "../client-runtime/dist/application-enrollment-storage.d.ts"
       ]
     }
   },
   "include": [
     "src/application-event.ts",
     "src/application-authorization.ts",
-    "src/application-enrollment.ts"
+    "src/application-enrollment.ts",
+    "src/application-enrollment-storage.ts"
   ]
 }

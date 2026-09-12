@@ -1,5 +1,5 @@
 /** Focused real-source/public-subpath lane. This is NOT a full package/tarball verification. */
-import { mkdtemp, mkdir, readFile, writeFile, cp, rm } from 'node:fs/promises';
+import { mkdtemp, mkdir, writeFile, cp, rm } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -22,32 +22,41 @@ function run(command, args) {
   return result.stdout;
 }
 try {
+  await writeFile(join(directory, 'package.json'), JSON.stringify({ type: 'module', private: true }));
   const version = run(compiler, [...prefix, '--version']).trim();
   if (version !== 'Version 5.8.3') throw new Error('Use the pinned TypeScript 5.8.3 compiler');
   const runtime = join(directory, 'node_modules/@nekon/client-runtime');
   const sdk = join(directory, 'node_modules/@nekon/sdk');
+  const entries = ['application-enrollment', 'application-enrollment-storage'];
   for (const path of [runtime, sdk]) await mkdir(path, { recursive: true });
-  // Isolated harness manifests intentionally expose only the selected subpath.
+  // Isolated harness manifests intentionally expose only the selected subpaths.
   // Canonical repository manifests and full tarballs are tested in the main lane.
   for (const [name, path] of [['client-runtime', runtime], ['sdk', sdk]]) {
-    await writeFile(join(path, 'package.json'), JSON.stringify({name:`@nekon/${name}`,type:'module',private:true,
-      exports:{'./application-enrollment':{types:'./application-enrollment.d.ts',import:'./application-enrollment.js'}}}));
+    const exports = Object.fromEntries(entries.map(entry => [`./${entry}`, {
+      types: `./${entry}.d.ts`, import: `./${entry}.js`,
+    }]));
+    await writeFile(join(path, 'package.json'), JSON.stringify({ name: `@nekon/${name}`, type: 'module', private: true, exports }));
   }
   const flags = ['--target','ES2024','--module','ESNext','--moduleResolution','Bundler',
     '--lib','ES2024,DOM,DOM.Iterable','--strict','--noUncheckedIndexedAccess',
     '--exactOptionalPropertyTypes','--verbatimModuleSyntax','--declaration','--noEmitOnError','--skipLibCheck','false'];
-  run(compiler,[...prefix,...flags,'--outDir',runtime,join(root,'packages/client-runtime/src/application-enrollment.ts')]);
+  run(compiler, [...prefix, ...flags, '--outDir', runtime,
+    ...entries.map(entry => join(root, `packages/client-runtime/src/${entry}.ts`))]);
   await normalizeEnrollmentDirectory(runtime);
-  await cp(join(root,'packages/sdk/src/application-enrollment.ts'),join(directory,'sdk-source.ts'));
-  run(compiler,[...prefix,...flags,'--outDir',join(directory,'sdk-compiled'),join(directory,'sdk-source.ts')]);
-  for (const extension of ['js','d.ts']) await cp(join(directory,`sdk-compiled/sdk-source.${extension}`),join(sdk,`application-enrollment.${extension}`));
-  for (const file of ['consumer.test.mjs','enrollment-fixture.mjs','consumer.ts']) {
-    await cp(join(root,'tests/enrollment',file),join(directory,file));
+  await mkdir(join(directory, 'sdk-source'));
+  for (const entry of entries) {
+    await cp(join(root, `packages/sdk/src/${entry}.ts`), join(directory, 'sdk-source', `${entry}.ts`));
   }
-  console.log(run(process.execPath,['--test','consumer.test.mjs']));
-  run(compiler,[...prefix,'--noEmit','--strict','--target','ES2024','--module','NodeNext',
-    '--moduleResolution','NodeNext','--skipLibCheck','false','consumer.ts']);
-  console.log(`PASS: focused enrollment public-subpath tests and strict NodeNext types (${version}). No full package, production vault, browser factory, MLS or live enrollment was tested.`);
+  run(compiler, [...prefix, ...flags, '--outDir', sdk,
+    ...entries.map(entry => join(directory, 'sdk-source', `${entry}.ts`))]);
+  for (const name of ['enrollment', 'enrollment-storage']) {
+    await cp(join(root, 'tests', name), join(directory, name), { recursive: true });
+  }
+  console.log(run(process.execPath, ['--test', 'enrollment/consumer.test.mjs', 'enrollment-storage/consumer.test.mjs']));
+  run(compiler, [...prefix, '--noEmit', '--strict', '--target', 'ES2024', '--module', 'NodeNext',
+    '--moduleResolution', 'NodeNext', '--skipLibCheck', 'false',
+    'enrollment/consumer.ts', 'enrollment-storage/consumer.ts']);
+  console.log(`PASS: focused enrollment and bound-storage public-subpath tests and strict NodeNext types (${version}). No full package, production vault, browser factory, MLS or live enrollment was tested.`);
 } finally {
-  await rm(directory, {recursive:true,force:true});
+  await rm(directory, { recursive: true, force: true });
 }

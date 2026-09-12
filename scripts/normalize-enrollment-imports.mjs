@@ -8,6 +8,8 @@ const expected = Object.freeze({
   'application-enrollment-validation.d.ts': ['./application-enrollment-types'],
   'application-enrollment-types.js': [],
   'application-enrollment-types.d.ts': [],
+  'application-enrollment-bound-vault.js': ['./application-enrollment-validation'],
+  'application-enrollment-bound-vault.d.ts': ['./application-enrollment-types'],
 });
 
 export function normalizeEnrollmentImports(source, file) {

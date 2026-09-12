@@ -5,7 +5,7 @@ import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-for (const mode of ['wrong-version', 'compiler-failure', 'normalization-failure', 'enrollment-normalization-failure', 'sdk-failure', 'success']) {
+for (const mode of ['wrong-version', 'compiler-failure', 'normalization-failure', 'enrollment-normalization-failure', 'storage-normalization-failure', 'sdk-failure', 'success']) {
   test(`build output cleanup: ${mode}`, async t => {
     const root = await mkdtemp(join(tmpdir(), 'nekon-build-test-'));
     t.after(() => rm(root, { recursive: true, force: true }));
@@ -28,8 +28,11 @@ for (const mode of ['wrong-version', 'compiler-failure', 'normalization-failure'
       'application-enrollment-validation.d.ts': 'import type { Fixture } from "./application-enrollment-types";\n',
       'application-enrollment-types.js': 'export {};\n',
       'application-enrollment-types.d.ts': 'export {};\n',
+      'application-enrollment-bound-vault.js': 'import { fixture } from "./application-enrollment-validation";\n',
+      'application-enrollment-bound-vault.d.ts': 'import type { Fixture } from "./application-enrollment-types";\n',
     };
     if (mode === 'enrollment-normalization-failure') enrollment['application-enrollment-coordinator.js'] = 'invalid';
+    if (mode === 'storage-normalization-failure') enrollment['application-enrollment-bound-vault.js'] = 'invalid';
     await writeFile(join(root, 'node_modules/typescript/bin/tsc'), `
 const fs = require('node:fs');
 if (process.argv.includes('--version')) {
