@@ -16,6 +16,23 @@ staged from an unmerged upstream candidate, not a production-ready release. The
 full SDK root, enrollment, encrypted Room owner, Rust/WASM adapters and messenger
 migration are still pending. See [licensing](LICENSE.md) and [security](SECURITY.md).
 
+## Local developer workbench
+
+The [developer workbench](examples/developer-workbench/README.md) is a working
+no-login event composer and byte inspector. Load synthetic message, telemetry or
+command data, encode through the public SDK, inspect canonical hex, and clear
+all transient input. It is **not a messaging service or Cloud admin console**:
+there is no enrollment, Room admission, E2EE exchange, project provisioning or
+message delivery in this example.
+
+After the installed-toolchain setup below, run `pnpm check:workbench` and open
+`examples/developer-workbench/dist/index.html`. The generated single HTML file
+embeds the existing SDK/codec output and token CSS; it requires no server, CDN,
+font download or persistent storage. Network connections are disabled by CSP.
+The normal `pnpm check` also runs its build and Node checks after the existing
+foundation and installed-package lanes. Optional Chromium UI checks are described
+in the example guide. No package publication or deployment is performed.
+
 ## Develop and verify
 
 Node 22+, npm, Git and pinned pnpm 10.18.3. TypeScript 5.8.3 is a build-only
