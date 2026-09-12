@@ -24,11 +24,15 @@
       ],
       "@nekon/client-runtime/application-authorization": [
         "../client-runtime/dist/application-device-authorization-api-resource.d.ts"
+      ],
+      "@nekon/client-runtime/application-enrollment": [
+        "../client-runtime/dist/application-enrollment.d.ts"
       ]
     }
   },
   "include": [
     "src/application-event.ts",
-    "src/application-authorization.ts"
+    "src/application-authorization.ts",
+    "src/application-enrollment.ts"
   ]
 }

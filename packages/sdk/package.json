@@ -19,6 +19,10 @@
     "./application-authorization": {
       "types": "./dist/application-authorization.d.ts",
       "import": "./dist/application-authorization.js"
+    },
+    "./application-enrollment": {
+      "types": "./dist/application-enrollment.d.ts",
+      "import": "./dist/application-enrollment.js"
     }
   },
   "engines": {

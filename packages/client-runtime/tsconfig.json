@@ -24,6 +24,7 @@
     "src/client-transport.ts",
     "src/client-request-transport.ts",
     "src/bounded-response.ts",
-    "src/application-device-authorization-api-resource.ts"
+    "src/application-device-authorization-api-resource.ts",
+    "src/application-enrollment.ts"
   ]
 }

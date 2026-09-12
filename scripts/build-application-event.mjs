@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import { existsSync } from 'node:fs';
 import { rm, readFile, writeFile } from 'node:fs/promises';
 import { normalizeAuthorizationImports } from './normalize-authorization-imports.mjs';
+import { normalizeEnrollmentDirectory } from './normalize-enrollment-imports.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const localTsc = resolve(root, 'node_modules/typescript/bin/tsc');
@@ -31,9 +32,10 @@ try {
     const path = resolve(root, 'packages/client-runtime/dist', `application-device-authorization-api-resource.${extension}`);
     await writeFile(path, normalizeAuthorizationImports(await readFile(path, 'utf8'), kind));
   }
+  await normalizeEnrollmentDirectory(directories[0]);
   run(['--project', 'packages/sdk/tsconfig.json']);
 } catch (error) {
   for (const path of directories) await rm(path, { recursive: true, force: true });
   throw error;
 }
-console.log('Extracted runtime and application-event SDK built with TypeScript 5.8.3; no publication.');
+console.log('Extracted runtime and SDK entries built with TypeScript 5.8.3; no publication.');

@@ -50,12 +50,13 @@ try {
   const tarballs = [];
   const modules = {
     'client-runtime': ['application-event-payload', 'client-transport', 'client-request-transport', 'bounded-response',
-      'application-device-authorization-api-resource', 'client-binary-codec', 'client-api-error', 'client-response-validation'],
-    sdk: ['application-event', 'application-authorization'],
+      'application-device-authorization-api-resource', 'client-binary-codec', 'client-api-error', 'client-response-validation',
+      'application-enrollment', 'application-enrollment-coordinator', 'application-enrollment-validation', 'application-enrollment-types'],
+    sdk: ['application-event', 'application-authorization', 'application-enrollment'],
   };
-  // The four newly extracted resource/helper modules raise the measured runtime
-  // artifact from the transport-only slice; this budget is unrelated to HTTP limits.
-  const budgets = { 'client-runtime': 64 * 1024, sdk: 48000 };
+  // Four enrollment modules are added to the authorization/transport artifact.
+  // This package-size budget is unrelated to HTTP or security limits.
+  const budgets = { 'client-runtime': 96 * 1024, sdk: 48000 };
   let fileCount = 0;
   for (const [leaf, names] of Object.entries(modules)) {
     const packed = JSON.parse(execute('npm', ['pack', '--ignore-scripts', '--json', '--pack-destination', directory], rootFile(`packages/${leaf}`), true));
@@ -77,8 +78,8 @@ try {
     assert.equal(pkg.license, 'UNLICENSED');
     assert.equal(pkg.sideEffects, false);
     assert.deepEqual(Object.keys(pkg.exports), leaf === 'sdk'
-      ? ['./application-event', './application-authorization']
-      : ['./application-event', './transport', './application-authorization']);
+      ? ['./application-event', './application-authorization', './application-enrollment']
+      : ['./application-event', './transport', './application-authorization', './application-enrollment']);
     assert.deepEqual(pkg.dependencies ?? {}, leaf === 'sdk' ? { '@nekon/client-runtime': '0.1.0-extraction.0' } : {});
     assert.match(pkg.scripts.prepublishOnly, /Publication disabled/);
   }
@@ -94,7 +95,8 @@ try {
     ['examples/application-event/example.mjs', 'example.mjs'],
     ['examples/application-authorization/example.mjs', 'authorization-example.mjs'],
   ];
-  const tests = ['consumer.test.mjs', 'transport.test.mjs', 'lifecycle.cases.mjs', 'authorization.test.mjs'];
+  await cp(rootFile('tests/enrollment'), join(directory, 'enrollment'), { recursive: true });
+  const tests = ['consumer.test.mjs', 'transport.test.mjs', 'lifecycle.cases.mjs', 'authorization.test.mjs', 'enrollment/consumer.test.mjs'];
   if (args[0] === '--http') {
     copies.push(['tests/application-authorization/http.cases.mjs', 'authorization-http.cases.mjs']);
     tests.push('authorization-http.cases.mjs');
@@ -105,7 +107,7 @@ try {
   execute(existsSync(localTsc) ? process.execPath : 'tsc', [
     ...(existsSync(localTsc) ? [localTsc] : []), '--noEmit', '--strict', '--skipLibCheck', 'false',
     '--target', 'ES2024', '--module', 'NodeNext', '--moduleResolution', 'NodeNext',
-    'consumer.ts', 'transport.ts', 'authorization.ts',
+    'consumer.ts', 'transport.ts', 'authorization.ts', 'enrollment/consumer.ts',
   ]);
   for (const example of ['example.mjs', 'authorization-example.mjs']) {
     console.log(execute(process.execPath, [example]).trim());
@@ -119,7 +121,7 @@ try {
     if (api.NEKON_APPLICATION_EVENT_SCHEMA !== 'nekon.application-event/1' ||
         typeof transport.NekonTransport !== 'function' ||
         typeof authorization.ApplicationDeviceAuthorizationApiResource !== 'function') throw new Error('Unexpected exports');
-    for (const name of ['bounded-response', 'client-binary-codec', 'client-api-error', 'client-response-validation']) {
+    for (const name of ['bounded-response', 'client-binary-codec', 'client-api-error', 'client-response-validation', 'application-enrollment-validation', 'application-enrollment-types', 'application-enrollment-coordinator']) {
       for (const specifier of ['@nekon/client-runtime/dist/' + name + '.js', '@nekon/client-runtime/' + name]) {
         try { await import(specifier); throw new Error('Private implementation exported'); }
         catch (error) { if (error.code !== 'ERR_PACKAGE_PATH_NOT_EXPORTED') throw error; }

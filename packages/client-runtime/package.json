@@ -23,6 +23,10 @@
     "./application-authorization": {
       "types": "./dist/application-device-authorization-api-resource.d.ts",
       "import": "./dist/application-device-authorization-api-resource.js"
+    },
+    "./application-enrollment": {
+      "types": "./dist/application-enrollment.d.ts",
+      "import": "./dist/application-enrollment.js"
     }
   },
   "engines": {
