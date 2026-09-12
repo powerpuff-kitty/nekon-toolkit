@@ -23,6 +23,7 @@
     "src/application-event-payload.ts",
     "src/client-transport.ts",
     "src/client-request-transport.ts",
-    "src/bounded-response.ts"
+    "src/bounded-response.ts",
+    "src/application-device-authorization-api-resource.ts"
   ]
 }
