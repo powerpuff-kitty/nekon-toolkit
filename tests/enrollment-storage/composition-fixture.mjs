@@ -1,7 +1,10 @@
-// TEST ONLY: real AES-GCM/CAS and Ed25519, in-memory persistence and a synthetic
-// proof transcript. Not LocalSecretVault, IndexedDB, production signing, or MLS.
+// TEST ONLY storage/device/service adapters with real AES-GCM/CAS and Ed25519.
+// The proof builder is the actual extracted V1 implementation, verified against
+// an independently constructed service-shaped transcript. This is not MLS,
+// LocalSecretVault, IndexedDB or a live enrollment service.
 import assert from 'node:assert/strict';
 import { webcrypto as crypto } from 'node:crypto';
+import { createEnterpriseAuthorizationRedemptionWithSigner as createProof } from '@nekon/sdk/application-enrollment-proof';
 const text = value => new TextEncoder().encode(value);
 const encode = bytes => Buffer.from(bytes).toString('base64url');
 const decode = value => new Uint8Array(Buffer.from(value, 'base64url'));
@@ -67,10 +70,14 @@ export async function compositionFixture(Coordinator, openBoundVault) {
   const open = (context = binding, initializeNewVault = false) => openBoundVault({
     vault, binding: context, initializeNewVault, assertActive: active,
   });
-  // This is a test transcript, explicitly not NEKON's production proof envelope.
-  const transcript = state => text('TEST-ONLY-binding-proof\0' + JSON.stringify({
-    applicationId, requestId: state.authorizationRequestId, code: state.code,
-    verifier: state.codeVerifier, credential: state.targetMlsCredential,
+  // Independent oracle: never ask the production builder for expected bytes.
+  const transcript = async state => text('NEKON-ENTERPRISE-AUTHORIZATION-CODE-REDEMPTION-V1\0' + JSON.stringify({
+    protocolVersion: 1, applicationId: state.applicationId,
+    authorizationRequestId: state.authorizationRequestId, targetDeviceId: state.targetDeviceId,
+    authorizationCodeHash: await hash(decode(state.code)),
+    codeVerifierHash: await hash(text(state.codeVerifier)),
+    targetSigningKeyHash: await hash(publicKey),
+    targetMlsCredentialHash: await hash(decode(state.targetMlsCredential)),
   }));
   const device = {
     async prepare() {
@@ -83,14 +90,16 @@ export async function compositionFixture(Coordinator, openBoundVault) {
     async prepareRedemption(state) {
       calls.proof++;
       assert.equal((await currentStore.read()).status, 'redeeming');
-      const bytes = transcript(state);
+      const code = decode(state.code);
+      const persistedCredential = decode(state.targetMlsCredential);
       try {
-        const signature = new Uint8Array(await crypto.subtle.sign('Ed25519', signing.privateKey, bytes));
-        try { return { authorizationRequestId: state.authorizationRequestId, code: state.code,
-          codeVerifier: state.codeVerifier, targetSigningPublicKey: encode(publicKey),
-          targetMlsCredential: state.targetMlsCredential, targetSignature: encode(signature) }; }
-        finally { signature.fill(0); }
-      } finally { bytes.fill(0); }
+        return await createProof({
+          applicationId: state.applicationId, authorizationRequestId: state.authorizationRequestId,
+          targetDeviceId: state.targetDeviceId, code, codeVerifier: state.codeVerifier,
+          targetSigningPublicKey: publicKey, targetMlsCredential: persistedCredential, crypto,
+          sign: async payload => new Uint8Array(await crypto.subtle.sign('Ed25519', signing.privateKey, payload)),
+        });
+      } finally { code.fill(0); persistedCredential.fill(0); }
     },
     async authenticate() {
       calls.authenticate++; assert.equal((await currentStore.read()).status, 'enrolled');
@@ -109,7 +118,11 @@ export async function compositionFixture(Coordinator, openBoundVault) {
     async redeemEnterpriseAuthorization(app, proof) {
       assert.equal(app, applicationId);
       const state = await currentStore.read(); assert.equal(state.status, 'redeeming');
-      const bytes = transcript(state); const signature = decode(proof.targetSignature);
+      assert.equal(proof.authorizationRequestId, state.authorizationRequestId);
+      assert.equal(proof.code, state.code); assert.equal(proof.codeVerifier, state.codeVerifier);
+      assert.equal(proof.targetSigningPublicKey, encode(publicKey));
+      assert.equal(proof.targetMlsCredential, state.targetMlsCredential);
+      const bytes = await transcript(state); const signature = decode(proof.targetSignature);
       try { assert.equal(await crypto.subtle.verify('Ed25519', signing.publicKey, signature, bytes), true); }
       finally { bytes.fill(0); signature.fill(0); }
       calls.redemptions.push(structuredClone(proof));

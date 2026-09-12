@@ -7,7 +7,11 @@ import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { normalizeEnrollmentDirectory } from './normalize-enrollment-imports.mjs';
 
-if (process.argv.length !== 2) throw new Error('Usage: check-enrollment.mjs');
+const args = process.argv.slice(2);
+if (args.length > 1 || (args.length === 1 && args[0] !== '--proof-only')) {
+  throw new Error('Usage: check-enrollment.mjs [--proof-only]');
+}
+const proofOnly = args.length === 1;
 const root = fileURLToPath(new URL('../', import.meta.url));
 const directory = await mkdtemp(join(tmpdir(), 'nekon-enrollment-'));
 const localTsc = join(root, 'node_modules/typescript/bin/tsc');
@@ -27,7 +31,7 @@ try {
   if (version !== 'Version 5.8.3') throw new Error('Use the pinned TypeScript 5.8.3 compiler');
   const runtime = join(directory, 'node_modules/@nekon/client-runtime');
   const sdk = join(directory, 'node_modules/@nekon/sdk');
-  const entries = ['application-enrollment', 'application-enrollment-storage'];
+  const entries = ['application-enrollment', 'application-enrollment-storage', 'application-enrollment-proof'];
   for (const path of [runtime, sdk]) await mkdir(path, { recursive: true });
   // Isolated harness manifests intentionally expose only the selected subpaths.
   // Canonical repository manifests and full tarballs are tested in the main lane.
@@ -49,14 +53,19 @@ try {
   }
   run(compiler, [...prefix, ...flags, '--outDir', sdk,
     ...entries.map(entry => join(directory, 'sdk-source', `${entry}.ts`))]);
-  for (const name of ['enrollment', 'enrollment-storage']) {
+  // Explicit subset option changes tests only, never the code under verification.
+  // The default continues to run the earlier coordinator cases as well.
+  const suites = proofOnly
+    ? ['enrollment-storage', 'enrollment-proof']
+    : ['enrollment', 'enrollment-storage', 'enrollment-proof'];
+  for (const name of suites) {
     await cp(join(root, 'tests', name), join(directory, name), { recursive: true });
   }
-  console.log(run(process.execPath, ['--test', 'enrollment/consumer.test.mjs', 'enrollment-storage/consumer.test.mjs']));
+  console.log(run(process.execPath, ['--test', ...suites.map(name => `${name}/consumer.test.mjs`)]));
   run(compiler, [...prefix, '--noEmit', '--strict', '--target', 'ES2024', '--module', 'NodeNext',
     '--moduleResolution', 'NodeNext', '--skipLibCheck', 'false',
-    'enrollment/consumer.ts', 'enrollment-storage/consumer.ts']);
-  console.log(`PASS: focused enrollment and bound-storage public-subpath tests and strict NodeNext types (${version}). No full package, production vault, browser factory, MLS or live enrollment was tested.`);
+    ...suites.map(name => `${name}/consumer.ts`)]);
+  console.log(`PASS: focused ${proofOnly ? 'proof and bound-storage subset' : 'enrollment, storage and proof'} public-subpath tests and strict NodeNext types (${version}). No full package, production vault, browser factory, MLS or live enrollment was tested.`);
 } finally {
   await rm(directory, { recursive: true, force: true });
 }

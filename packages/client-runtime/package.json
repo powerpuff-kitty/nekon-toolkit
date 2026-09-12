@@ -31,6 +31,10 @@
     "./application-enrollment-storage": {
       "types": "./dist/application-enrollment-storage.d.ts",
       "import": "./dist/application-enrollment-storage.js"
+    },
+    "./application-enrollment-proof": {
+      "types": "./dist/application-enrollment-proof.d.ts",
+      "import": "./dist/application-enrollment-proof.js"
     }
   },
   "engines": {
