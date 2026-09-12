@@ -8,8 +8,9 @@ ESM and declarations. It has no communication or UI-framework dependencies.
 `packages/client-runtime` exposes the canonical application-event codec,
 low-level transport and existing application-authorization resource. `packages/sdk`
 exposes the typed event wrapper and an identical authorization-resource re-export.
-The full SDK root, encrypted enrollment owner, verified Room controller and
-Rust/WASM remain absent from this branch.
+Runtime and SDK enrollment entries expose the same coordinator, optional bound
+storage adapter and V1 proof helper. The full SDK root, concrete production vault,
+browser factory, verified Room controller and Rust/WASM integration remain absent.
 
 Transport owns API-version headers, configured session boundaries, bounded local
 response consumption and target-bound WebSocket ticket negotiation. Resource
@@ -23,6 +24,22 @@ A transport socket is not proof of Room membership, readiness, encryption or
 delivery. Payload serialization is plaintext until an authenticated/encrypted
 Room controller processes it. Host integrations must enforce approved origin,
 freshness and identity binding before acting on authorization responses.
+
+## Enrollment composition
+
+The coordinator owns the four-state transition order: preparation before approval
+HTTP, callback material before redemption, and the receipt before activation.
+Explicit resume reuses durable material after an ambiguous reply. The bound-store
+adapter retains context independently of the current draft; retirement clears the
+draft, not its service/device binding. This proposed V2 envelope stays opt-in and
+rejects rather than migrates V1 records. Vault encryption, authenticated metadata,
+key derivation, persistence and atomic revision updates remain host obligations.
+
+The proof helper constructs the existing V1 transcript and verifies the trusted
+signer's result locally. It does not take a private-key handle or establish server
+approval. Device signing/authentication and idempotent activation are adapters,
+not implementations supplied by this source preview. Pin the expected service
+origin and device/identity scope; never send raw snapshots to UI or diagnostics.
 
 ## Public/private ownership
 
@@ -40,6 +57,8 @@ The backend consumes shared protocol contracts, not browser/UI implementation.
 
 `application-event-extraction.json`, `transport-extraction.json` and
 `authorization-extraction.json` pin their respective exact upstream source slices.
+The enrollment, enrollment-storage and enrollment-proof extraction manifests
+retain their independently reviewed coordinator, storage and proof sources.
 Transport retains the latest coordinated HTTP fixes; authorization retains its
 independent unchanged resource/helper pin. Do not reset one manifest merely to
 make its commit equal another slice. The upstream candidates are not production
@@ -56,7 +75,8 @@ Package, API-date, wire-generation and cipher-suite compatibility remain distinc
 The client package lane installs real tarballs into an offline external consumer,
 tests all supported public subpaths and strict NodeNext declarations, and rejects
 private implementation imports. Reconciliation retains both transport and
-authorization cases, including their optional native loopback HTTP groups. Static
+authorization cases, including their optional native loopback HTTP groups, plus
+all coordinator/storage/proof cases and public composition types. Static
 registration guards supplement rather than replace actual packed execution.
 Browser gates use synthetic adapters and locally fulfilled emitted modules;
 they are not live-service evidence. See the latest integration checkpoint for

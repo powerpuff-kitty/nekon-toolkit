@@ -51,11 +51,13 @@ try {
   const tarballs = [];
   const modules = {
     'client-runtime': ['application-event-payload', 'client-transport', 'client-request-transport', 'bounded-response',
-      'application-device-authorization-api-resource', 'client-binary-codec', 'client-api-error', 'client-response-validation'],
-    sdk: ['application-event', 'application-authorization'],
+      'application-device-authorization-api-resource', 'client-binary-codec', 'client-api-error', 'client-response-validation',
+      'application-enrollment', 'application-enrollment-coordinator', 'application-enrollment-validation', 'application-enrollment-types',
+      'application-enrollment-storage', 'application-enrollment-bound-vault', 'application-enrollment-proof'],
+    sdk: ['application-event', 'application-authorization', 'application-enrollment', 'application-enrollment-storage', 'application-enrollment-proof'],
   };
-  // Preserve #36's authorization artifact budget; HTTP body limits are unrelated.
-  const budgets = { 'client-runtime': 64 * 1024, sdk: 48000 };
+  // Preserve #37's existing enrollment artifact budget; HTTP body limits are unrelated.
+  const budgets = { 'client-runtime': 112 * 1024, sdk: 48000 };
   let fileCount = 0;
   for (const [leaf, names] of Object.entries(modules)) {
     const packed = JSON.parse(execute('npm', ['pack', '--ignore-scripts', '--json', '--pack-destination', directory], rootFile(`packages/${leaf}`), true));
@@ -77,8 +79,8 @@ try {
     assert.equal(pkg.license, 'UNLICENSED');
     assert.equal(pkg.sideEffects, false);
     assert.deepEqual(Object.keys(pkg.exports), leaf === 'sdk'
-      ? ['./application-event', './application-authorization']
-      : ['./application-event', './transport', './application-authorization']);
+      ? ['./application-event', './application-authorization', './application-enrollment', './application-enrollment-storage', './application-enrollment-proof']
+      : ['./application-event', './transport', './application-authorization', './application-enrollment', './application-enrollment-storage', './application-enrollment-proof']);
     assert.deepEqual(pkg.dependencies ?? {}, leaf === 'sdk' ? { '@nekon/client-runtime': '0.1.0-extraction.0' } : {});
     assert.match(pkg.scripts.prepublishOnly, /Publication disabled/);
   }
@@ -95,7 +97,11 @@ try {
     ['examples/application-event/example.mjs', 'example.mjs'],
     ['examples/application-authorization/example.mjs', 'authorization-example.mjs'],
   ]) await cp(rootFile(source), join(directory, target));
-  const tests = ['consumer.test.mjs', 'transport.test.mjs', 'lifecycle.cases.mjs', 'http-semantics.cases.mjs', 'authorization.test.mjs'];
+  await cp(rootFile('tests/enrollment'), join(directory, 'enrollment'), { recursive: true });
+  await cp(rootFile('tests/enrollment-storage'), join(directory, 'enrollment-storage'), { recursive: true });
+  await cp(rootFile('tests/enrollment-proof'), join(directory, 'enrollment-proof'), { recursive: true });
+  const tests = ['consumer.test.mjs', 'transport.test.mjs', 'lifecycle.cases.mjs', 'http-semantics.cases.mjs', 'authorization.test.mjs',
+    'enrollment/consumer.test.mjs', 'enrollment-storage/consumer.test.mjs', 'enrollment-proof/consumer.test.mjs'];
   if (args[0] === '--http') {
     await cp(rootFile('tests/transport/http.cases.mjs'), join(directory, 'http.cases.mjs'));
     await cp(rootFile('tests/transport/http-semantics-native.cases.mjs'), join(directory, 'http-semantics-native.cases.mjs'));
@@ -107,6 +113,7 @@ try {
   execute(existsSync(localTsc) ? process.execPath : 'tsc', [
     ...(existsSync(localTsc) ? [localTsc] : []), '--noEmit', '--strict', '--skipLibCheck', 'false',
     '--target', 'ES2024', '--module', 'NodeNext', '--moduleResolution', 'NodeNext', 'consumer.ts', 'transport.ts', 'authorization.ts',
+    'enrollment/consumer.ts', 'enrollment-storage/consumer.ts', 'enrollment-proof/consumer.ts', 'enrollment/composition.ts',
   ]);
   for (const example of ['example.mjs', 'authorization-example.mjs']) {
     console.log(execute(process.execPath, [example]).trim());
@@ -119,13 +126,20 @@ try {
     const authorization = await import('@nekon/sdk/application-authorization');
     if (typeof authorization.ApplicationDeviceAuthorizationApiResource !== 'function') throw new Error('Unexpected authorization export');
     if (api.NEKON_APPLICATION_EVENT_SCHEMA !== 'nekon.application-event/1' || typeof transport.NekonTransport !== 'function') throw new Error('Unexpected exports');
-    const helpers = ['bounded-response', 'client-binary-codec', 'client-api-error', 'client-response-validation'];
+    const enrollment = await import('@nekon/sdk/application-enrollment');
+    const storage = await import('@nekon/sdk/application-enrollment-storage');
+    const proof = await import('@nekon/sdk/application-enrollment-proof');
+    if (typeof enrollment.ApplicationEnrollmentCoordinator !== 'function' ||
+        typeof storage.openBoundApplicationEnrollmentVault !== 'function' ||
+        typeof proof.createEnterpriseAuthorizationRedemptionWithSigner !== 'function') throw new Error('Unexpected enrollment exports');
+    const helpers = ['bounded-response', 'client-binary-codec', 'client-api-error', 'client-response-validation',
+      'application-enrollment-validation', 'application-enrollment-types', 'application-enrollment-coordinator', 'application-enrollment-bound-vault'];
     for (const specifier of helpers.flatMap(name => ['@nekon/client-runtime/dist/' + name + '.js', '@nekon/client-runtime/' + name])) {
       try { await import(specifier); throw new Error('Private implementation exported'); }
       catch (error) { if (error.code !== 'ERR_PACKAGE_PATH_NOT_EXPORTED') throw error; }
     }
   `]);
-  console.log(`PASS: deterministic clean builds, 2 tarballs / ${fileCount} allowlisted files, offline install, event/transport/lifecycle/authorization consumer suites, strict types and both synthetic examples. Native HTTP: ${args[0] === '--http' ? 'included' : 'not run'}. No registry publication.`);
+  console.log(`PASS: deterministic clean builds, 2 tarballs / ${fileCount} allowlisted files, offline install, event/transport/lifecycle/authorization/enrollment consumer suites, strict types and both synthetic examples. Native HTTP: ${args[0] === '--http' ? 'included' : 'not run'}. No registry publication.`);
 } finally {
   await rm(directory, { recursive: true, force: true });
 }

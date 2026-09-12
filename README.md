@@ -11,15 +11,21 @@ Public developer tools for building private communication experiences on NEKON.
 | `@nekon/client-runtime/application-event` | Shared codec used by the SDK wrapper | No duplicate codec implementation |
 | `@nekon/client-runtime/transport` | HTTP, sessions, bounded responses and WebSocket tickets | No Room admission, MLS or full SDK client |
 | `@nekon/sdk/application-authorization` | Prepared authorization-request and redemption API | Same runtime resource; no key generation or complete enrollment flow |
+| `@nekon/sdk/application-enrollment` | Resumable four-state coordinator and typed adapter ports | Requires trusted device, encrypted vault and activation adapters |
+| `@nekon/sdk/application-enrollment-storage` | Service/device-bound store adapter | Proposed V2 format; explicit opt-in, no automatic migration |
+| `@nekon/sdk/application-enrollment-proof` | Existing V1 proof construction and signature self-check | Signer retains private-key ownership; no HTTP or Room authority |
 
-The authorization resource is also available through
+The enrollment entries also have matching runtime subpaths and share one
+implementation. The authorization resource is also available through
 `@nekon/client-runtime/application-authorization`. Its SDK entry re-exports the
 same class and types rather than implementing a second client.
 
 All packages remain unpublished, private and licensing-gated. Transport and
 resource sources are staged from pinned upstream candidates, not a production
-release. The full SDK root, encrypted enrollment coordinator, verified Room owner,
-Rust/WASM adapters and messenger migration are still pending on this branch.
+release. The coordinator, storage binding and proof helper are available, but the
+complete browser enrollment factory, production vault/device adapters, full SDK
+root, verified Room owner, Rust/WASM integration and messenger migration remain
+pending. A local source merge does not approve a production rollout.
 See [licensing](LICENSE.md) and [security](SECURITY.md).
 
 ## Develop and verify
@@ -46,12 +52,13 @@ from clean outputs, packs canonical SDK/runtime tarballs, installs them offline
 with lifecycle scripts disabled, checks file/export/dependency boundaries and
 strict NodeNext types, and executes both synthetic examples. Its historical
 filename is retained for compatibility; it now covers events, transport,
-lifecycle, HTTP semantics and application authorization. `--http` adds original
+lifecycle, HTTP semantics, application authorization, enrollment, storage and
+proofs. `--http` adds original
 transport, transport-regression and authorization loopback tests. The default
 opens no test servers. Partial artifacts are removed after build failure.
 
 No check deploys or publishes packages. See the
-[latest integration checkpoint](docs/authorization-main-integration-2026-09-12.md)
+[latest integration checkpoint](docs/enrollment-main-integration-2026-09-12.md)
 for exact results, source-reconstruction details and unrun release gates.
 
 ## Browser checks
@@ -63,6 +70,7 @@ Use `scripts/browser-requirements.txt` and an already installed Chromium.
 node scripts/build-application-event.mjs
 python3 scripts/check-application-authorization-browser.py --chromium /path/to/chromium
 python3 scripts/check-transport-http-semantics-browser.py --chromium /path/to/chromium
+python3 scripts/check-enrollment-storage-browser.py --chromium /path/to/chromium
 ```
 
 These checks execute actual emitted modules fulfilled locally with synthetic
@@ -74,6 +82,9 @@ Existing token/event/transport browser runners remain available separately.
 
 [SDK guide](packages/sdk/README.md) · [Runtime guide](packages/client-runtime/README.md) ·
 [Authorization extraction](docs/application-authorization-extraction.md) ·
+[Enrollment coordinator](docs/application-enrollment-extraction.md) ·
+[Bound storage](docs/application-enrollment-storage.md) ·
+[Proof ownership](docs/application-enrollment-proof.md) ·
 [Token guide](packages/tokens/README.md) · [Architecture](ARCHITECTURE.md) ·
 [Design](DESIGN.md) · [Roadmap](ROADMAP.md) · [Contributing](CONTRIBUTING.md)
 
@@ -86,7 +97,7 @@ cryptographic authenticity nor Room authority. Do not log proofs or verifier dat
 
 The hosted service, billing, control plane and first-party messenger remain in
 `nekon`. Public source staging does not transfer production ownership. Event,
-transport and authorization manifests retain independent exact source pins;
+transport, authorization and enrollment manifests retain independent exact source pins;
 reconcile upstream changes rather than maintaining divergent implementations.
 Full dependency review and encrypted two-client interoperability remain release gates.
 

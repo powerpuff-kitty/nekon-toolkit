@@ -15,6 +15,7 @@ test('default package lane registers both transport regressions and authorizatio
   assert.deepEqual(quoted(match[1]), [
     'consumer.test.mjs', 'transport.test.mjs', 'lifecycle.cases.mjs',
     'http-semantics.cases.mjs', 'authorization.test.mjs',
+    'enrollment/consumer.test.mjs', 'enrollment-storage/consumer.test.mjs', 'enrollment-proof/consumer.test.mjs',
   ]);
   for (const path of ['tests/transport/http-semantics.cases.mjs', 'tests/application-authorization/consumer.test.mjs']) {
     assert.ok(source.includes(`'${path}'`));
@@ -34,13 +35,13 @@ test('optional HTTP lane preserves original, semantics and authorization groups'
 });
 
 test('integration retains strict consumers, both examples and isolated package resolution', () => {
-  for (const path of ['consumer.ts', 'transport.ts', 'authorization.ts', 'example.mjs', 'authorization-example.mjs']) {
+  for (const path of ['consumer.ts', 'transport.ts', 'authorization.ts', 'enrollment/consumer.ts', 'enrollment-storage/consumer.ts', 'enrollment-proof/consumer.ts', 'enrollment/composition.ts', 'example.mjs', 'authorization-example.mjs']) {
     assert.ok(source.includes(`'${path}'`));
   }
   assert.match(source, /delete env\.NEKON_TRANSPORT_TEST_MODULE;/);
   assert.match(source, /'--offline', '--ignore-scripts'/);
   assert.match(source, /'--noEmit', '--strict', '--skipLibCheck', 'false'/);
-  assert.ok(source.includes("'client-runtime': 64 * 1024, sdk: 48000"));
+  assert.ok(source.includes("'client-runtime': 112 * 1024, sdk: 48000"));
 });
 
 for (const args of [['--skip'], ['--http', '--http'], ['--http', '--skip']]) {

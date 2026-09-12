@@ -19,6 +19,18 @@
     "./application-authorization": {
       "types": "./dist/application-authorization.d.ts",
       "import": "./dist/application-authorization.js"
+    },
+    "./application-enrollment": {
+      "types": "./dist/application-enrollment.d.ts",
+      "import": "./dist/application-enrollment.js"
+    },
+    "./application-enrollment-storage": {
+      "types": "./dist/application-enrollment-storage.d.ts",
+      "import": "./dist/application-enrollment-storage.js"
+    },
+    "./application-enrollment-proof": {
+      "types": "./dist/application-enrollment-proof.d.ts",
+      "import": "./dist/application-enrollment-proof.js"
     }
   },
   "engines": {

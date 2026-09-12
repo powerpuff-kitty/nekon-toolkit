@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "sourceRepository": "powerpuff-kitty/nekon",
+  "sourceCommit": "ebad69147676cd905fc5bdb2572af3e42366cba6",
+  "sourceStatus": "unmerged candidate; not deployed",
+  "publicationAllowed": false,
+  "ownership": "private consumer not migrated; no independent coordinator implementation",
+  "files": [
+    {
+      "path": "packages/client-runtime/src/application-enrollment-coordinator.ts",
+      "bytes": 13040,
+      "gitBlob": "19a85f356fb4daa4c2c4121fe09bf71a5e90d6db",
+      "sha256": "b24a31930230b043594c2207871a16e0eb27ae1e400a226995db1453efce4b58"
+    },
+    {
+      "path": "packages/client-runtime/src/application-enrollment-types.ts",
+      "bytes": 4294,
+      "gitBlob": "0f25ddfb6e03bc13f61e38f22dd6affaa09800e8",
+      "sha256": "d9e69185de477df2f196ce983a365b5e49941f8bbb2ab55f3a2fdfe0f8d1552b"
+    },
+    {
+      "path": "packages/client-runtime/src/application-enrollment-validation.ts",
+      "bytes": 10328,
+      "gitBlob": "5c223b74f7140e819c96418510a055b50fd44256",
+      "sha256": "bd26f7307b2da7ef6b5beb43e1caa204cb123c88119da1b64c4c7580192fff68"
+    }
+  ],
+  "testFixture": {
+    "path": "tests/enrollment/enrollment-fixture.mjs",
+    "sourcePath": "packages/sdk/test-support/enrollment-fixture.mjs",
+    "sourceCommit": "ef4c73ac6a457a3bbc573bb301ada9fc9d29fcc2",
+    "gitBlob": "4213cbbbbb3ac21842f908ee21815818a111eaa6"
+  },
+  "upstreamAdjustment": "Owned verifier buffer uses validated ASCII length and TextEncoder.encodeInto to satisfy strict ES2024 BufferSource types; no state/wire change."
+}
