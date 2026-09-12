@@ -1,4 +1,4 @@
-import { boundedResponse, rejectDeclaredOversize } from "./bounded-response.js";
+import { boundedResponse, discardResponse, rejectDeclaredOversize } from "./bounded-response.js";
 
 export const NEKON_API_VERSION = "2026-08-24";
 export const NEKON_API_VERSION_HEADER = "Nekon-Api-Version";
@@ -110,6 +110,7 @@ export class NekonTransport implements NekonRequestTransport {
             this.#responseBodyLimitBytes,
           );
     if (!response.ok) {
+      discardResponse(response);
       throw new Error(`nekon_discovery_failed:${response.status}`);
     }
     return (await response.json()) as NekonCapabilities;
@@ -330,6 +331,7 @@ export class NekonTransport implements NekonRequestTransport {
       "application-session",
     );
     if (!response.ok) {
+      discardResponse(response);
       throw new Error(`websocket_ticket_failed:${response.status}`);
     }
     const body = (await response.json()) as unknown;
@@ -364,7 +366,12 @@ async function requestWithBoundedResponse(
   sourceSignal: AbortSignal | null | undefined,
   responseBodyLimitBytes: number,
 ): Promise<Response> {
+  sourceSignal?.throwIfAborted();
   const response = await fetcher(url, init);
+  if (sourceSignal?.aborted) {
+    discardResponse(response);
+    sourceSignal.throwIfAborted();
+  }
   rejectDeclaredOversize(response, responseBodyLimitBytes);
   if (response.body === null) return response;
   const signal = sourceSignal ?? new AbortController().signal;
@@ -384,6 +391,7 @@ async function requestWithTimeout(
   timeoutMs: number,
   responseBodyLimitBytes: number,
 ): Promise<Response> {
+  sourceSignal?.throwIfAborted();
   const controller = new AbortController();
   const forwardAbort = (): void => controller.abort(sourceSignal?.reason);
   if (sourceSignal?.aborted) forwardAbort();
@@ -399,6 +407,10 @@ async function requestWithTimeout(
   };
   try {
     const response = await fetcher(url, { ...init, signal: controller.signal });
+    if (controller.signal.aborted) {
+      discardResponse(response);
+      controller.signal.throwIfAborted();
+    }
     rejectDeclaredOversize(response, responseBodyLimitBytes);
     if (response.body === null) {
       cleanup();

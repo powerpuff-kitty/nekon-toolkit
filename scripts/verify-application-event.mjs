@@ -75,11 +75,12 @@ try {
     ['tests/application-event/consumer.test.mjs', 'consumer.test.mjs'],
     ['tests/application-event/consumer.ts', 'consumer.ts'],
     ['tests/transport/consumer.test.mjs', 'transport.test.mjs'],
+    ['tests/transport/lifecycle.cases.mjs', 'lifecycle.cases.mjs'],
     ['tests/transport/consumer.ts', 'transport.ts'],
     ['tests/protocol-vectors/v1-application-event-payload.hex', 'vector.hex'],
     ['examples/application-event/example.mjs', 'example.mjs'],
   ]) await cp(rootFile(source), join(directory, target));
-  console.log(execute(process.execPath, ['--test', 'consumer.test.mjs', 'transport.test.mjs']));
+  console.log(execute(process.execPath, ['--test', 'consumer.test.mjs', 'transport.test.mjs', 'lifecycle.cases.mjs']));
   const localTsc = rootFile('node_modules/typescript/bin/tsc');
   execute(existsSync(localTsc) ? process.execPath : 'tsc', [
     ...(existsSync(localTsc) ? [localTsc] : []), '--noEmit', '--strict', '--skipLibCheck', 'false',
@@ -97,7 +98,7 @@ try {
       catch (error) { if (error.code !== 'ERR_PACKAGE_PATH_NOT_EXPORTED') throw error; }
     }
   `]);
-  console.log('PASS: deterministic clean builds, 2 tarballs / 16 allowlisted files, offline install, both consumer suites, strict types and synthetic example. No registry publication.');
+  console.log('PASS: deterministic clean builds, 2 tarballs / 16 allowlisted files, offline install, event/transport/lifecycle consumer suites, strict types and synthetic example. No registry publication.');
 } finally {
   await rm(directory, { recursive: true, force: true });
 }

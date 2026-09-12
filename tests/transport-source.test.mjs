@@ -5,14 +5,14 @@ import { createHash } from 'node:crypto';
 const root = new URL('../', import.meta.url);
 const manifest = JSON.parse(await readFile(new URL('transport-extraction.json', root), 'utf8'));
 const expected = {
-  'packages/client-runtime/src/client-transport.ts': 'a17ba8e60a668c34cc3847dfdda9ef6cf1ad0045',
+  'packages/client-runtime/src/client-transport.ts': 'c1351c16618c6459c567fb90946fa3c201c8ec26',
   'packages/client-runtime/src/client-request-transport.ts': '876a0e02793f671dea795ebc3b0c7fc82b2b1b2e',
-  'packages/client-runtime/src/bounded-response.ts': '1ec5732b1e0c75807c1f99d958ccf2b8394602ab',
+  'packages/client-runtime/src/bounded-response.ts': 'e0fec3a13924cbbb8106625f4acbc72e7b1626aa',
 };
 test('transport staging records an exact upstream candidate without claiming release or cutover', () => {
   assert.equal(manifest.schemaVersion,1);
   assert.equal(manifest.sourceRepository,'powerpuff-kitty/nekon');
-  assert.equal(manifest.sourceCommit,'ebeb424c386930b32fd97d7adc8a68281e817fb8');
+  assert.equal(manifest.sourceCommit,'39c8e2b268e1ee0fd7bf69f21827e1aa0a1dc186');
   assert.equal(manifest.publicationAllowed,false);
   assert.match(manifest.sourceStatus,/unmerged/);
   assert.match(manifest.ownership,/not migrated/);
