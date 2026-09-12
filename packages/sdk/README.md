@@ -1,69 +1,126 @@
-# @nekon/sdk — application-event extraction preview
+# @nekon/sdk — extracted developer tools
 
-This is the first source slice of the existing NEKON SDK, not a replacement SDK
-and not a complete communication client. Only `@nekon/sdk/application-event` is
-available here. The root SDK, browser/MLS adapter, transport and Room controller
-are deliberately not exported until their dependency closure is extracted.
+Unpublished source preview of the existing NEKON SDK. Available entry points:
+`@nekon/sdk/application-event`, `@nekon/sdk/application-authorization`,
+`@nekon/sdk/application-enrollment`, `@nekon/sdk/application-enrollment-storage`,
+and `@nekon/sdk/application-enrollment-proof`.
+The root SDK, browser/MLS adapter and verified Room controller are deliberately
+unavailable until their complete dependency sets and integration gates are met.
+Version `0.1.0-extraction.0` remains private and licensing-gated; do not expect
+these previews from a public npm install.
 
-Version `0.1.0-extraction.0` is unpublished and `private: true`. Do not run
-`npm install @nekon/sdk` expecting this preview from a registry. Build and verify
-the local sources with `node scripts/verify-application-event.mjs` at the repo root.
-The verification installs both real package tarballs into an isolated consumer.
-
-## What this slice provides
-
-Encode and inspect canonical `nekon.application-event/1` payloads with opaque
-content bytes, reverse-domain types such as `com.example.task.created`, application
-schema versions 1–65535, lowercase MIME types, and optional reply, thread, replace
-or reaction relations. Content is bounded to 48 KiB and payloads to 64 KiB.
+## Application events
 
 ```js
 import {
-  createApplicationEventEncoder,
-  inspectApplicationEventPayload,
+  createApplicationEventEncoder, inspectApplicationEventPayload,
   clearApplicationEventPayload,
 } from '@nekon/sdk/application-event';
 
 const encodeForScope = createApplicationEventEncoder({
-  type: 'com.example.task.created',
-  schemaVersion: 1,
+  type: 'com.example.task.created', schemaVersion: 1,
   contentType: 'application/json',
   content: new TextEncoder().encode('{"taskId":"synthetic-demo"}'),
 });
-
-// Synthetic example only; actual IDs must come from a verified Room controller.
+// Synthetic scope only; actual IDs must come from the verified Room controller.
 const bytes = encodeForScope({
-  roomId: 'room_01JABCDEFGHIJKLMNOP',
-  eventId: 'evt_01JAPPLICATIONEVENT0',
+  roomId: 'room_01JABCDEFGHIJKLMNOP', eventId: 'evt_01JAPPLICATIONEVENT0',
 });
-const payload = inspectApplicationEventPayload(bytes);
-clearApplicationEventPayload(payload);
+const inspected = inspectApplicationEventPayload(bytes);
+clearApplicationEventPayload(inspected);
 bytes.fill(0);
 ```
 
-`encodeApplicationEventPayload(input)` accepts a fully bound payload directly.
-`createApplicationEventEncoder(draft)` snapshots the supplied content/relation and
-returns the callback used by the existing private controller. It binds the exact
-Room and Event IDs when called. That controller is not included in this preview.
-The inspector returns a separate copy of the content bytes; clearing it does not
-clear the encoded buffer, the original input or the encoder's snapshot. Release
-encoder references after use. JavaScript does not guarantee erasure of every copy.
+These canonical `nekon.application-event/1` payloads carry opaque content,
+reverse-domain types, schema versions 1–65535, lowercase media types and optional
+reply/thread/replace/reaction relationships. Content is limited to 48 KiB; total
+payloads to 64 KiB. `encodeApplicationEventPayload` accepts a fully bound input.
+The draft helper owns a content/relation snapshot and binds scope when invoked.
 
-## Security and semantics
+**Serialization is not encryption.** These bytes contain application plaintext;
+the real Room controller must bind the outer envelope, authorize and encrypt the
+message. Inspection does not authenticate a sender or grant membership. Validate
+the application's opaque content schema only after authenticated decryption and
+compare the inspected IDs with the trusted outer envelope. A relation is data,
+not an instruction to execute commands or grant authority.
 
-**Serialization is not encryption.** These bytes contain application plaintext.
-Do not send/store them as though they were encrypted. In a full integration the
-verified Room controller must bind the envelope scope, encrypt, authorize, and
-send them. An inspected payload alone proves neither sender identity, permissions,
-Room membership nor authenticity. Applications must compare it with the trusted
-outer envelope and validate their own content schema after authenticated decryption.
-A relation is data, not a command to replace records, invoke tools or grant authority.
+Inspection returns an independent content copy. Clearing it does not clear the
+encoded bytes, original input or draft snapshot. Release encoder references after
+use; JavaScript cannot guarantee erasure of every copy. No JSON interpretation,
+DOM access, networking or cryptographic implementation is included in this codec.
 
-The codec never parses JSON content, fetches a URL, opens a socket or touches the
-DOM. There is no Rust/WASM dependency in this exact slice. No new cryptographic
-algorithm was introduced; the two source files are byte-identical to the pinned
-upstream source. Matching its fixed Rust-protocol vector is regression evidence,
-not a fresh execution of the Rust test suite or a security audit.
+## Application authorization
 
-See `application-event-extraction.json` and `docs/application-event-extraction.md`
-at the repo root for provenance, staging ownership and remaining migration gates.
+```ts
+import { ApplicationDeviceAuthorizationApiResource } from '@nekon/sdk/application-authorization';
+import { NekonTransport } from '@nekon/client-runtime/transport';
+
+const api = new ApplicationDeviceAuthorizationApiResource(
+  new NekonTransport('https://service.example.invalid'),
+);
+```
+
+Use `createEnterpriseAuthorizationRequest(applicationId, preparedRequest)` and
+`redeemEnterpriseAuthorization(applicationId, preparedProof)` only with the
+existing enrollment coordinator's trusted, immutable material. The SDK export
+is the same runtime class, not another implementation or a complete login flow.
+
+The request contains the correlation ID, approved callback, state, PKCE challenge,
+identity/device IDs and credential hashes. Redemption carries the same request
+ID, returned code, original verifier, signing public key, MLS credential and proof
+signature. These values must be generated, bound and durably persisted by the
+higher-level enrollment owner. Its framework-neutral coordinator is available
+through application-enrollment; production device and vault adapters are not. Never use
+test zeros or new random retry material for an actual enrollment.
+
+The resource submits each call once in public credential mode, validates response
+shape/correlation, and reports errors. It does not navigate, persist secrets,
+compute/verify proofs, create a session, install keys or admit a participant to a
+Room. Hosts must check approved authorization origin, expiry and identity bindings;
+typed response shape alone does not establish them. Never log proof/code/verifier
+values or raw errors. A retry hint does not override operation-idempotency rules.
+
+See the runtime guide for the existing structured HTTP-error fields and limits.
+The `Enterprise` method names are preserved for API compatibility, not a new
+restriction that only corporate integrations can use these building blocks.
+
+## Resumable enrollment, bound storage and proofs
+
+Use `ApplicationEnrollmentCoordinator` from `@nekon/sdk/application-enrollment`
+with trusted device, store, transport and activation adapters. Its methods are
+begin, acceptCallback, read, resume and retire. Preparation/callback/receipt writes
+precede their corresponding network or activation step. Explicit resume reuses
+saved material after ambiguous responses; a saved receipt can recover activation
+without repeating redemption. Do not expose raw read() records to presentation,
+logging or analytics. Configure the approved service origin and expected scope.
+
+`openBoundApplicationEnrollmentVault` from the storage entry wraps a supplied
+secret vault. Encryption, KDF, authenticated metadata and atomic persistence remain
+vault-owned. Its proposed V2 envelope is opt-in: it retains service/device binding
+when a draft completes or is retired, and rejects V1 data without automatic migration.
+
+`createEnterpriseAuthorizationRedemptionWithSigner` from the proof entry builds
+the existing V1 transcript, calls the host's signer and self-checks the result.
+No private-key parameter is accepted. The signer returns an owned signature buffer;
+the helper clears owned arrays but cannot erase all retained strings or copies.
+The coordinator owns callback validation and durable retry decisions; proof creation
+performs no HTTP or storage and proves neither server approval nor Room authority.
+
+The production browser factory, vault/Worker/KDF adapters and MLS integration remain
+separate. These exports do not constitute a complete browser login or encrypted
+messaging client. The repository integration guide records current checks and limits.
+
+## Build and verify
+
+From the repository root with the pinned toolchain installed:
+
+```sh
+node scripts/verify-application-event.mjs
+```
+
+This builds the supported modules, packs both packages, installs their actual
+tarballs in an isolated offline consumer, and runs event, transport, lifecycle,
+authorization, enrollment, storage, proof and strict declaration checks. No production endpoint or registry
+publication is involved. Source manifests record the unchanged upstream bytes;
+staging is not source-ownership cutover, security certification or a live E2EE
+interoperability result. Full SDK/Rust/WASM and messenger migration remain open.

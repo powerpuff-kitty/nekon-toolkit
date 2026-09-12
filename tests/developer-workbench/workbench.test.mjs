@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import * as sdk from '../../packages/sdk/dist/application-event.js';
+import * as sdk from '@nekon/sdk/application-event';
 import { createWorkbench, describeError, SAMPLES, SYNTHETIC_SCOPE } from '../../examples/developer-workbench/workbench.mjs';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';

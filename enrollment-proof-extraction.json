@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "sourceRepository": "powerpuff-kitty/nekon",
+  "sourceCommit": "d984b2fc1980f9d458988de3a1437581e25be234",
+  "sourceStatus": "unmerged integration candidate; not deployed",
+  "publicationAllowed": false,
+  "ownership": "private consumer not migrated; unchanged proof implementation",
+  "wireFormat": "existing V1 redemption transcript; no protocol or storage format change",
+  "files": [
+    {
+      "path": "packages/client-runtime/src/application-enrollment-proof.ts",
+      "bytes": 6349,
+      "gitBlob": "8721f0968ef03a83c907ea5cb2c18f28934a5657",
+      "sha256": "a3699ab5d89af48a2961bf195f65fc47623d0a5316d290d2d21547a24663161a"
+    }
+  ],
+  "dependencies": [],
+  "parentSourceManifests": [
+    "enrollment-extraction.json",
+    "enrollment-storage-extraction.json"
+  ]
+}

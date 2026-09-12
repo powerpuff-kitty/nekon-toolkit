@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "sourceRepository": "powerpuff-kitty/nekon",
+  "sourceCommit": "39c8e2b268e1ee0fd7bf69f21827e1aa0a1dc186",
+  "sourceStatus": "unmerged candidate; not deployed",
+  "status": "staged-unchanged-resource",
+  "publicationAllowed": false,
+  "ownership": "private consumer not migrated; no independent resource fork",
+  "resourceAlsoMatches": {
+    "commit": "ef4c73ac6a457a3bbc573bb301ada9fc9d29fcc2",
+    "gitBlob": "ff71119ed44655190f1ef1fea857d248d44edbec"
+  },
+  "buildAdapter": "Only known emitted static import specifiers receive .js suffixes; original TypeScript is unchanged.",
+  "files": [
+    {
+      "path": "packages/client-runtime/src/application-device-authorization-api-resource.ts",
+      "bytes": 6987,
+      "gitBlob": "ff71119ed44655190f1ef1fea857d248d44edbec",
+      "sha256": "dfdf6380446c0813679c52928e65315cd2189c0b3d0764f437dae57bf853dfac"
+    },
+    {
+      "path": "packages/client-runtime/src/client-binary-codec.ts",
+      "bytes": 1464,
+      "gitBlob": "b3a0f42118f92a1bc6c39d53dd2e5f8ef6144fc4",
+      "sha256": "2652033cf9ecd2408c6ce275949f5f09f5ef94614860caf053b8e7ad930b8192"
+    },
+    {
+      "path": "packages/client-runtime/src/client-api-error.ts",
+      "bytes": 1689,
+      "gitBlob": "e5c4d17684eceac5cdcbd905f4acf939538abe4f",
+      "sha256": "6c9a6c6ab6f3aec1af23041c4ccd8ee4949471e34781a073b1e80cce450d3047"
+    },
+    {
+      "path": "packages/client-runtime/src/client-response-validation.ts",
+      "bytes": 2313,
+      "gitBlob": "f56985a5ec5d7b061b3e7f105bcb5393c40ddc41",
+      "sha256": "153a86481b6ff601e40d9de4b71fa638a3072b183fcf07572af48b010bc5fbe2"
+    }
+  ]
+}

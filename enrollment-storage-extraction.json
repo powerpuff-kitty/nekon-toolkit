@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "sourceRepository": "powerpuff-kitty/nekon",
+  "sourceCommit": "3b36676ac162edbe5845848791928a2d5e345d5d",
+  "sourceStatus": "unmerged integration candidate; not deployed",
+  "publicationAllowed": false,
+  "automaticMigration": false,
+  "formatStatus": "ADR-0062 proposed V2 local envelope; explicit opt-in only",
+  "ownership": "private consumer not migrated; parent coordinator and validation unchanged",
+  "files": [
+    {
+      "path": "packages/client-runtime/src/application-enrollment-bound-vault.ts",
+      "bytes": 10242,
+      "gitBlob": "0cdf7f1c528b57765e702d1acde77a22837532f3",
+      "sha256": "debbb7759d40db2dd1f663f8ee3b6b70e38040b583539b3a5f3148e84e82b697"
+    }
+  ],
+  "dependenciesPinnedBy": "enrollment-extraction.json",
+  "testFixture": {
+    "path": "tests/enrollment-storage/upstream-binding-cases.mjs",
+    "sourcePath": "packages/sdk/test-support/enrollment-binding-cases.mjs",
+    "gitBlob": "82abae42b30e4dc0d812d7f0f2054ea917e3970e"
+  },
+  "notIncluded": [
+    "LocalSecretVault implementation",
+    "IndexedDB/KDF implementation",
+    "browser enrollment factory",
+    "production signing/MLS",
+    "V1 migration or recovery"
+  ]
+}

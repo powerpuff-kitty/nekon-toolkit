@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "license": "UNLICENSED",
-  "description": "Unpublished structured application-event extraction slice; not a complete communication SDK.",
+  "description": "Unpublished extracted application-event and authorization tools; not a complete communication SDK.",
   "files": [
     "dist",
     "README.md",
@@ -15,6 +15,22 @@
     "./application-event": {
       "types": "./dist/application-event.d.ts",
       "import": "./dist/application-event.js"
+    },
+    "./application-authorization": {
+      "types": "./dist/application-authorization.d.ts",
+      "import": "./dist/application-authorization.js"
+    },
+    "./application-enrollment": {
+      "types": "./dist/application-enrollment.d.ts",
+      "import": "./dist/application-enrollment.js"
+    },
+    "./application-enrollment-storage": {
+      "types": "./dist/application-enrollment-storage.d.ts",
+      "import": "./dist/application-enrollment-storage.js"
+    },
+    "./application-enrollment-proof": {
+      "types": "./dist/application-enrollment-proof.d.ts",
+      "import": "./dist/application-enrollment-proof.js"
     }
   },
   "engines": {

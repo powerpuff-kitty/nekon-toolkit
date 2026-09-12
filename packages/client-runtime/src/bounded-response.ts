@@ -94,11 +94,22 @@ function withMetadata(bounded: Response, original: Response): Response {
 }
 
 export function rejectDeclaredOversize(response: Response, maximumBytes: number): void {
+  // HEAD and 304 can describe a representation's size without transferring it.
+  // A null body has no decoded content to bound (RFC 9110, section 8.6).
+  if (response.body === null) return;
   const rawLength = response.headers.get("content-length");
   if (rawLength === null || !/^\d+$/.test(rawLength)) return;
   const length = Number(rawLength);
   if (length <= maximumBytes) return;
   // The streaming check remains authoritative when the server omits or lies about length.
-  void response.body?.cancel().catch(() => undefined);
+  discardResponse(response);
   throw new Error("response_body_too_large");
+}
+
+/** Dispose a response owned by the transport without draining or awaiting its body.
+ * Cancellation failure must not replace an HTTP/abort error or keep it pending.
+ * A response returned by request() remains the caller's responsibility instead.
+ */
+export function discardResponse(response: Response): void {
+  void response.body?.cancel().catch(() => undefined);
 }
