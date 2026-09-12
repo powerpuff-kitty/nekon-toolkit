@@ -1,8 +1,9 @@
 # @nekon/client-runtime — extraction preview
 
-Three implemented subpaths: `@nekon/client-runtime/application-event`,
-`@nekon/client-runtime/transport`, and
-`@nekon/client-runtime/application-authorization`. No framework, CSS, external
+Implemented subpaths: `@nekon/client-runtime/application-event`, `transport`,
+`application-authorization`, `application-enrollment`,
+`application-enrollment-storage`, and `application-enrollment-proof`, all under
+the `@nekon/client-runtime` package. No framework, CSS, external
 runtime dependency or WASM is required for these slices. The root runtime, vault,
 Room state machine, MLS and synchronization owners are not included. Packages
 remain private, unpublished and licensing-gated at `0.1.0-extraction.0`.
@@ -104,6 +105,29 @@ No retries are performed automatically. Hints are data, not authorization to ret
 with fresh material. Do not log proofs, codes, verifier strings, callbacks or raw
 errors. Validation, fetch and JSON failures can also throw; do not assume every
 exception is a `NekonHttpError`.
+
+## Enrollment building blocks
+
+`application-enrollment` exports the existing four-state coordinator and narrow
+adapter contracts. `application-enrollment-storage` adapts a trusted encrypted
+secret vault to the coordinator's store interface, binding it to a service,
+application, callback, identity, device and credential hashes. `application-enrollment-proof`
+constructs the existing V1 signer-based proof and independently checks its signature.
+The matching SDK subpaths reuse these implementations rather than duplicating them.
+
+The coordinator exposes begin/acceptCallback/read/resume/retire. It preserves exact
+pending material on explicit recovery and saves receipts before activation. Raw
+read() snapshots are sensitive, not UI state. Always pin the intended authorization
+origin and scope. The host still supplies encrypted persistence/atomic CAS, device
+preparation/signing/authentication and idempotent activation. A valid signature or
+receipt shape does not grant Room membership or message access.
+
+Bound storage uses an explicit opt-in proposed V2 envelope. Existing V1 records,
+missing bindings and mismatched context are retained and rejected, not silently
+migrated. Initialization is allowed only after actual vault creation; retirement
+does not discard the binding or revoke anything remotely. Do not use test storage
+or placeholder credentials in production. The browser factory, actual vault/KDF,
+Worker and MLS adapters remain outside these source previews.
 
 ## Source ownership and verification
 

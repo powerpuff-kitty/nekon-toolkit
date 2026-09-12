@@ -4,87 +4,114 @@ Public developer tools for building private communication experiences on NEKON.
 
 ## Implemented source previews
 
-| Surface | Available here | Boundary |
+| Surface | Available here | Important boundary |
 | --- | --- | --- |
-| `@nekon/tokens` | 91 semantic tokens, scoped themes, CSS/JSON/ESM/types | No network or framework |
+| `@nekon/tokens` | 91 semantic tokens, scoped themes, CSS/JSON/ESM/types | No network or UI framework |
 | `@nekon/sdk/application-event` | Existing canonical custom-event encoding and inspection | Serialization is not encryption |
-| `@nekon/client-runtime/transport` | HTTP, sessions, bounded responses and WebSocket tickets | No verified Room admission or MLS |
-| `@nekon/sdk/application-authorization` | Existing prepared-request/redemption API | No key generation or durable enrollment ownership |
-| `@nekon/sdk/application-enrollment` | Existing resumable four-state coordinator and typed ports | Concrete encrypted store/device/activation adapters are required |
-| `@nekon/sdk/application-enrollment-storage` | Opt-in service/device-bound store adapter | Proposed V2 envelope; host vault owns encryption and CAS |
-| `@nekon/sdk/application-enrollment-proof` | Existing V1 proof construction and signature self-check | Trusted signer retains private-key ownership; no HTTP or Room admission |
+| `@nekon/client-runtime/application-event` | Shared codec used by the SDK wrapper | No duplicate codec implementation |
+| `@nekon/client-runtime/transport` | HTTP, sessions, bounded responses and WebSocket tickets | No Room admission, MLS or full SDK client |
+| `@nekon/sdk/application-authorization` | Prepared authorization-request and redemption API | Same runtime resource; no key generation or complete enrollment flow |
+| `@nekon/sdk/application-enrollment` | Resumable four-state coordinator and typed adapter ports | Requires trusted device, encrypted vault and activation adapters |
+| `@nekon/sdk/application-enrollment-storage` | Service/device-bound store adapter | Proposed V2 format; explicit opt-in, no automatic migration |
+| `@nekon/sdk/application-enrollment-proof` | Existing V1 proof construction and signature self-check | Signer retains private-key ownership; no HTTP or Room authority |
 
-The SDK entries use the same implementations exposed by their corresponding
-runtime subpaths. Packages are private, unpublished and licensing-gated. Sources
-are staged from coordinated unmerged upstream candidates, not production releases.
-The full SDK root, browser/MLS factory, verified Room owner and first-party
-messenger migration remain pending. See [licensing](LICENSE.md) and
-[security](SECURITY.md).
+The enrollment entries also have matching runtime subpaths and share one
+implementation. The authorization resource is also available through
+`@nekon/client-runtime/application-authorization`. Its SDK entry re-exports the
+same class and types rather than implementing a second client.
+
+All packages remain unpublished, private and licensing-gated. Transport and
+resource sources are staged from pinned upstream candidates, not a production
+release. The coordinator, storage binding and proof helper are available, but the
+complete browser enrollment factory, production vault/device adapters, full SDK
+root, verified Room owner, Rust/WASM integration and messenger migration remain
+pending. A local source merge does not approve a production rollout.
+See [licensing](LICENSE.md) and [security](SECURITY.md).
 
 ## Develop and verify
 
-Use Node 22+, npm, Git, pinned pnpm 10.18.3 and TypeScript 5.8.3 (build-only):
+Use Node 22+, npm, Git and pinned pnpm 10.18.3. TypeScript 5.8.3 is a build-only
+dependency and does not ship in runtime packages.
 
 ```sh
 pnpm install --frozen-lockfile
 pnpm check
+# Optional native HTTP integration against the same installed packages:
+node scripts/verify-application-event.mjs --http
 ```
 
-The default check retains the foundation and combined installed-client package
-lanes. Packages are built from clean output directories, packed, installed offline
-with lifecycle scripts disabled, and checked for explicit exports, contents and
-strict consumer types. Partial outputs are removed after compiler or import
-normalization failure. The client lane includes event, transport, authorization
-and enrollment tests; no command deploys or publishes a package.
-
-A focused enrollment check, using a pre-provisioned TypeScript 5.8.3 when needed:
+The documented fallback for a pre-provisioned TypeScript 5.8.3 on PATH is:
 
 ```sh
-node scripts/check-enrollment.mjs
+npm run check
 ```
 
-This compiles the real new sources and public export barrels into a temporary
-module-resolution harness. It is not a substitute for the full installed-tarball
-or repository checks. The [latest checkpoint](docs/application-enrollment-proof.md)
-clearly distinguishes checks actually run from those still pending.
+The root check runs all discovered foundation/build/provenance tests, token
+artifact checks, and the combined client-package lane. The client lane builds
+from clean outputs, packs canonical SDK/runtime tarballs, installs them offline
+with lifecycle scripts disabled, checks file/export/dependency boundaries and
+strict NodeNext types, and executes both synthetic examples. Its historical
+filename is retained for compatibility; it now covers events, transport,
+lifecycle, HTTP semantics, application authorization, enrollment, storage and
+proofs. `--http` adds original
+transport, transport-regression and authorization loopback tests. The default
+opens no test servers. Partial artifacts are removed after build failure.
 
-## Guides and examples
+No check deploys or publishes packages. See the
+[latest integration checkpoint](docs/enrollment-main-integration-2026-09-12.md)
+for exact results, source-reconstruction details and unrun release gates.
 
-[Enrollment proof](docs/application-enrollment-proof.md) ·
-[Enrollment storage](docs/application-enrollment-storage.md) ·
-[Enrollment coordinator](docs/application-enrollment-extraction.md) ·
+## Browser checks
+
+Python/Playwright are optional contributor tools, not package dependencies.
+Use `scripts/browser-requirements.txt` and an already installed Chromium.
+
+```sh
+node scripts/build-application-event.mjs
+python3 scripts/check-application-authorization-browser.py --chromium /path/to/chromium
+python3 scripts/check-transport-http-semantics-browser.py --chromium /path/to/chromium
+python3 scripts/check-enrollment-storage-browser.py --chromium /path/to/chromium
+```
+
+These checks execute actual emitted modules fulfilled locally with synthetic
+Fetch/socket adapters. They do not connect to a live NEKON service or establish
+production TLS/CORS/cookie, enrollment or cross-browser security interoperability.
+Existing token/event/transport browser runners remain available separately.
+
+## Guides, examples and roadmap
+
 [SDK guide](packages/sdk/README.md) · [Runtime guide](packages/client-runtime/README.md) ·
 [Authorization extraction](docs/application-authorization-extraction.md) ·
-[Tokens](packages/tokens/README.md) · [Architecture](ARCHITECTURE.md) ·
+[Enrollment coordinator](docs/application-enrollment-extraction.md) ·
+[Bound storage](docs/application-enrollment-storage.md) ·
+[Proof ownership](docs/application-enrollment-proof.md) ·
+[Token guide](packages/tokens/README.md) · [Architecture](ARCHITECTURE.md) ·
 [Design](DESIGN.md) · [Roadmap](ROADMAP.md) · [Contributing](CONTRIBUTING.md)
 
 Open `examples/tokens/index.html` after building tokens. Synthetic event and
-authorization examples run in the combined installed-package verification lane.
-Enrollment tests use a real encrypted test store and test-only signing, not a
-production vault, key adapter or live approval flow. Do not copy test secrets or
-placeholder adapters into a real application. Raw enrollment snapshots are
-sensitive and must not enter UI, logs or analytics.
-
-Python/Playwright browser checks are optional contributor tooling, not package
-runtime dependencies. Use `scripts/browser-requirements.txt` and an installed
-Chromium; existing browser commands and limitations are recorded in the relevant
-checkpoint documents. Browser tests using synthetic adapters do not establish
-production TLS/CORS/cookie or encrypted-client interoperability.
+authorization examples run automatically against installed package exports.
+Never use test zeros, placeholder callbacks or synthetic IDs for real enrollment.
+Prepared authorization material must be trusted, immutable and durably owned by
+the higher-level enrollment integration. Receipt shape alone proves neither
+cryptographic authenticity nor Room authority. Do not log proofs or verifier data.
 
 The hosted service, billing, control plane and first-party messenger remain in
-`nekon`. Staging is not source-ownership cutover. Exact source manifests record
-upstream provenance; reconcile changes rather than maintaining a runtime fork.
+`nekon`. Public source staging does not transfer production ownership. Event,
+transport, authorization and enrollment manifests retain independent exact source pins;
+reconcile upstream changes rather than maintaining divergent implementations.
+Full dependency review and encrypted two-client interoperability remain release gates.
 
 ## Project 14
 
 [Roadmap issue #1](https://github.com/powerpuff-kitty/nekon-toolkit/issues/1) indexes
-the work items. Repository issues exist; live Project membership/fields remain
-unverified. With an authenticated GitHub CLI authorized for the board:
+30 work items. Repository issues exist; live Project 14 membership/fields remain
+unverified. The helper only changes membership when explicitly run with an
+authenticated GitHub CLI authorized for the board:
 
 ```sh
 node scripts/sync-project.mjs --dry-run
 node scripts/sync-project.mjs --apply
 ```
 
-The helper preserves existing fields and rejects ambiguous inventories before
-writes. See [Project synchronization](docs/project-sync.md). No Actions are added.
+It preserves existing fields and rejects ambiguous inventories before writes.
+See [Project synchronization](docs/project-sync.md). No GitHub Actions are added.
