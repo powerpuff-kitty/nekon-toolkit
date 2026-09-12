@@ -1,0 +1,585 @@
+{
+  "schemaVersion": 1,
+  "snapshot": "2026-09-12",
+  "title": "NEKON Developer Docs",
+  "packages": [
+    "tokens",
+    "client-runtime",
+    "sdk"
+  ],
+  "modules": [
+    {
+      "specifier": "@nekon/tokens",
+      "summary": "Semantic design-token JavaScript and type access.",
+      "boundary": "Variables and data only; not a UI component library or accessibility certification.",
+      "environment": "CSS in browser hosts; JSON/JavaScript in compatible consumers.",
+      "credentials": "No network credentials."
+    },
+    {
+      "specifier": "@nekon/tokens/tokens.css",
+      "summary": "Semantic design-token tokens.css asset.",
+      "boundary": "Variables and data only; not a UI component library or accessibility certification.",
+      "environment": "CSS in browser hosts; JSON/JavaScript in compatible consumers.",
+      "credentials": "No network credentials."
+    },
+    {
+      "specifier": "@nekon/tokens/scoped.css",
+      "summary": "Semantic design-token scoped.css asset.",
+      "boundary": "Variables and data only; not a UI component library or accessibility certification.",
+      "environment": "CSS in browser hosts; JSON/JavaScript in compatible consumers.",
+      "credentials": "No network credentials."
+    },
+    {
+      "specifier": "@nekon/tokens/tokens.json",
+      "summary": "Semantic design-token tokens.json asset.",
+      "boundary": "Variables and data only; not a UI component library or accessibility certification.",
+      "environment": "CSS in browser hosts; JSON/JavaScript in compatible consumers.",
+      "credentials": "No network credentials."
+    },
+    {
+      "specifier": "@nekon/client-runtime/application-event",
+      "summary": "Canonical event encoding and inspection.",
+      "boundary": "Plaintext serialization is not encryption, identity verification or Room authority.",
+      "environment": "Browser or Node 22+; no DOM required.",
+      "credentials": "No credentials required for local encoding."
+    },
+    {
+      "specifier": "@nekon/client-runtime/transport",
+      "summary": "Versioned HTTP, bounded responses, configured sessions and target-bound socket tickets.",
+      "boundary": "Transport connectivity is not Room membership, delivery or an encrypted client.",
+      "environment": "Browser or Node 22+ with Fetch/WebSocket implementations.",
+      "credentials": "Session/capability rules depend on the operation; never use server secrets in browser configuration."
+    },
+    {
+      "specifier": "@nekon/client-runtime/application-authorization",
+      "summary": "Submit prepared authorization requests and redemption proofs.",
+      "boundary": "Shape and correlation checks do not replace trusted material, origin and identity binding.",
+      "environment": "Browser or Node 22+ with a trusted request transport.",
+      "credentials": "Public credential mode; prepared proof data remains sensitive."
+    },
+    {
+      "specifier": "@nekon/client-runtime/application-enrollment",
+      "summary": "The existing four-state coordinator and narrow adapter contracts.",
+      "boundary": "Host-provided device, encrypted store and activation adapters are required.",
+      "environment": "Browser or Node 22+ with trusted adapters and required Web Crypto.",
+      "credentials": "Pending records contain sensitive callback/verifier material; never expose raw snapshots."
+    },
+    {
+      "specifier": "@nekon/client-runtime/application-enrollment-storage",
+      "summary": "Opt-in service/device-bound storage wrapper and vault port.",
+      "boundary": "Proposed V2 envelope; no automatic V1 migration or production vault implementation.",
+      "environment": "Browser or Node 22+ with an encrypted, atomic-CAS vault.",
+      "credentials": "Host owns encryption, authenticated metadata and key management."
+    },
+    {
+      "specifier": "@nekon/client-runtime/application-enrollment-proof",
+      "summary": "Existing V1 proof construction and independent-copy signature self-check.",
+      "boundary": "A valid local signature does not establish service approval or Room authority.",
+      "environment": "Browser or Node 22+ with Web Crypto Ed25519 and a trusted signer.",
+      "credentials": "Private keys remain signer-owned; use only the exact persisted pending material."
+    },
+    {
+      "specifier": "@nekon/sdk/application-event",
+      "summary": "Canonical event encoding and inspection.",
+      "boundary": "Plaintext serialization is not encryption, identity verification or Room authority.",
+      "environment": "Browser or Node 22+; no DOM required.",
+      "credentials": "No credentials required for local encoding."
+    },
+    {
+      "specifier": "@nekon/sdk/application-authorization",
+      "summary": "Submit prepared authorization requests and redemption proofs.",
+      "boundary": "Shape and correlation checks do not replace trusted material, origin and identity binding.",
+      "environment": "Browser or Node 22+ with a trusted request transport.",
+      "credentials": "Public credential mode; prepared proof data remains sensitive."
+    },
+    {
+      "specifier": "@nekon/sdk/application-enrollment",
+      "summary": "The existing four-state coordinator and narrow adapter contracts.",
+      "boundary": "Host-provided device, encrypted store and activation adapters are required.",
+      "environment": "Browser or Node 22+ with trusted adapters and required Web Crypto.",
+      "credentials": "Pending records contain sensitive callback/verifier material; never expose raw snapshots."
+    },
+    {
+      "specifier": "@nekon/sdk/application-enrollment-storage",
+      "summary": "Opt-in service/device-bound storage wrapper and vault port.",
+      "boundary": "Proposed V2 envelope; no automatic V1 migration or production vault implementation.",
+      "environment": "Browser or Node 22+ with an encrypted, atomic-CAS vault.",
+      "credentials": "Host owns encryption, authenticated metadata and key management."
+    },
+    {
+      "specifier": "@nekon/sdk/application-enrollment-proof",
+      "summary": "Existing V1 proof construction and independent-copy signature self-check.",
+      "boundary": "A valid local signature does not establish service approval or Room authority.",
+      "environment": "Browser or Node 22+ with Web Crypto Ed25519 and a trusted signer.",
+      "credentials": "Private keys remain signer-owned; use only the exact persisted pending material."
+    }
+  ],
+  "examples": [
+    {
+      "id": "event-round-trip",
+      "title": "Application-event round trip",
+      "path": "examples/application-event/example.mjs",
+      "mode": "execute",
+      "environment": "Node 22+; local only",
+      "credentials": "None. Synthetic IDs and content only.",
+      "testPath": "scripts/verify-application-event.mjs"
+    },
+    {
+      "id": "authorization-request",
+      "title": "Synthetic authorization request",
+      "path": "examples/application-authorization/example.mjs",
+      "mode": "execute",
+      "environment": "Node 22+; injected synthetic Fetch adapter",
+      "credentials": "None. Test values are not valid enrollment material.",
+      "testPath": "scripts/verify-application-event.mjs"
+    },
+    {
+      "id": "enrollment-composition",
+      "title": "Type-checked composition",
+      "path": "tests/enrollment/composition.ts",
+      "mode": "typecheck",
+      "environment": "Compile-only; not an executable browser onboarding example",
+      "credentials": "Trusted vault, device and activation adapters must be supplied by the host.",
+      "testPath": "scripts/verify-application-event.mjs"
+    }
+  ],
+  "pages": [
+    {
+      "id": "start",
+      "title": "Build with NEKON",
+      "summary": "A practical map of the tools you can use today—and the boundaries that still matter.",
+      "blocks": [
+        {
+          "kind": "paragraph",
+          "text": "The toolkit is a set of reusable source previews for private communication experiences. Start with a local event, inspect its bytes, then explore the transport and enrollment contracts. There is no public npm release or hosted sandbox in this snapshot."
+        },
+        {
+          "kind": "heading",
+          "text": "Choose a starting point"
+        },
+        {
+          "kind": "link",
+          "target": "install",
+          "text": "Set up the source workspace"
+        },
+        {
+          "kind": "link",
+          "target": "events",
+          "text": "Run an application-event round trip"
+        },
+        {
+          "kind": "link",
+          "target": "authorization",
+          "text": "Exercise the authorization API without a service"
+        },
+        {
+          "kind": "link",
+          "target": "enrollment",
+          "text": "Compose the enrollment interfaces"
+        },
+        {
+          "kind": "heading",
+          "text": "Available does not mean production-ready"
+        },
+        {
+          "kind": "list",
+          "items": [
+            "Available: semantic design tokens, event encoding, low-level HTTP/WebSocket transport, prepared authorization APIs, enrollment coordination, optional bound storage, and proof construction.",
+            "Not included: the complete browser enrollment factory, production vault and device adapters, verified Room/MLS integration, hosted provisioning, and the messenger migration.",
+            "The local workbench is a plaintext event inspector, not a messaging service. Use synthetic data only."
+          ]
+        },
+        {
+          "kind": "heading",
+          "text": "One implementation, explicit entry points"
+        },
+        {
+          "kind": "paragraph",
+          "text": "SDK wrappers reuse the runtime implementation. The reference pages below are generated from package export maps and emitted TypeScript declarations; unsupported root imports are not advertised."
+        },
+        {
+          "kind": "link",
+          "target": "concepts",
+          "text": "Understand identity, authentication, and authority"
+        }
+      ]
+    },
+    {
+      "id": "install",
+      "title": "Install from source",
+      "summary": "Use the reviewed source workspace. Do not install these previews from a registry.",
+      "blocks": [
+        {
+          "kind": "heading",
+          "text": "Toolchain"
+        },
+        {
+          "kind": "paragraph",
+          "text": "The repository pins pnpm 10.18.3 and TypeScript 5.8.3, with Node 22 or later. Follow the repository’s setup instructions. Registry access is needed for an initial toolchain installation; the isolated package-consumer tests themselves install locally built tarballs offline."
+        },
+        {
+          "kind": "heading",
+          "text": "Check before using the output"
+        },
+        {
+          "kind": "paragraph",
+          "text": "In an installed workspace, run pnpm check. With TypeScript 5.8.3 already provisioned on PATH, npm run check is the documented fallback. These commands exercise the root checks and the actual packaged clients; they do not deploy or publish anything."
+        },
+        {
+          "kind": "paragraph",
+          "text": "Run npm run build:docs to build this local documentation snapshot, or npm run check:docs to run documentation unit tests and the complete packaged-client check. The optional node scripts/verify-application-event.mjs --http command adds native loopback HTTP tests."
+        },
+        {
+          "kind": "heading",
+          "text": "Preview the workbench"
+        },
+        {
+          "kind": "paragraph",
+          "text": "Run npm run check:workbench, then use examples/developer-workbench/dist/index.html. For documentation, the generated file is docs/portal/dist/index.html. Generated HTML is a local artifact, not a hosted release."
+        },
+        {
+          "kind": "heading",
+          "text": "For a separate application"
+        },
+        {
+          "kind": "paragraph",
+          "text": "Use reviewed local tarballs or your controlled workspace arrangement. Package names in examples are supported import paths, not a claim that npm install can retrieve a release. Licensing and publication review remain open."
+        },
+        {
+          "kind": "link",
+          "target": "events",
+          "text": "Try the first executable example"
+        }
+      ]
+    },
+    {
+      "id": "concepts",
+      "title": "Identity is not authority",
+      "summary": "Keep the different layers separate when building your own interface.",
+      "blocks": [
+        {
+          "kind": "list",
+          "items": [
+            "Account, identity, and device are distinct contexts. A device ID or public key is not an account, and an identifier alone grants no permission.",
+            "Application and project configuration are not Room membership. An application authorization result must not be turned into a generic Room-access grant.",
+            "Authentication identifies an accepted session. Decryption requires the appropriate cryptographic state; an authenticated session alone does not prove it can decrypt a message.",
+            "Transport connectivity is not verified membership or delivery. Opening a socket does not prove that a message was stored, reached a device, or was read by a person.",
+            "Event serialization is plaintext. Inspecting a structurally valid payload does not authenticate its author or authorize an embedded command."
+          ]
+        },
+        {
+          "kind": "heading",
+          "text": "Build UI from the right signal"
+        },
+        {
+          "kind": "paragraph",
+          "text": "Keep connection state, verification state, membership, message acceptance, device delivery, and human read state separate. Do not use a decorative lock, generated avatar, or synthetic ID as a trust indicator."
+        },
+        {
+          "kind": "link",
+          "target": "boundaries",
+          "text": "Review metadata, recovery, and release boundaries"
+        }
+      ]
+    },
+    {
+      "id": "events",
+      "title": "Your first application event",
+      "summary": "An executable, no-network round trip through the public SDK.",
+      "blocks": [
+        {
+          "kind": "paragraph",
+          "text": "The example below is included verbatim from the maintained repository example and executed against the same locally installed SDK/runtime tarballs used by the package tests. The Room and Event IDs are synthetic; the codec does not create or authorize a Room."
+        },
+        {
+          "kind": "example",
+          "id": "event-round-trip"
+        },
+        {
+          "kind": "heading",
+          "text": "After inspection"
+        },
+        {
+          "kind": "paragraph",
+          "text": "Validate your application’s content schema only after authenticated decryption in a real integration. Compare the inner Room and Event IDs with the trusted outer envelope. Reply, thread, replacement, and reaction relationships are data—not authority or instructions to execute."
+        },
+        {
+          "kind": "heading",
+          "text": "Content ownership"
+        },
+        {
+          "kind": "paragraph",
+          "text": "The encoder and decoder may own separate snapshots. Clearing the byte array you hold does not erase every string, encoder snapshot, browser copy, or provider buffer. The example demonstrates explicit cleanup but is not an erasure guarantee."
+        },
+        {
+          "kind": "link",
+          "target": "concepts",
+          "text": "Revisit the authority boundaries"
+        }
+      ]
+    },
+    {
+      "id": "transport",
+      "title": "Transport and lifecycle",
+      "summary": "Own responses, sockets, and recovery deliberately.",
+      "blocks": [
+        {
+          "kind": "heading",
+          "text": "HTTP"
+        },
+        {
+          "kind": "paragraph",
+          "text": "NekonTransport applies API-version headers, session policy, route validation, redirect rejection, and response-byte bounds. Resource clients still validate domain schemas. Discovery data is untrusted and requires higher-level compatibility checks."
+        },
+        {
+          "kind": "paragraph",
+          "text": "Consume or cancel every returned response body, including HTTP errors. HEAD and 304 metadata do not imply a transferred response body. Streaming limits still apply when a real body exists. A timeout ends local observation, not remote execution."
+        },
+        {
+          "kind": "heading",
+          "text": "Durable writes"
+        },
+        {
+          "kind": "paragraph",
+          "text": "Ordinary durable writes are not automatically retried or given implicit deadlines. A caller can supply an explicit deadline, but an interrupted observation is not a rollback. Retry only according to the owning operation’s durable and idempotency rules."
+        },
+        {
+          "kind": "heading",
+          "text": "Sockets"
+        },
+        {
+          "kind": "paragraph",
+          "text": "The connect helpers obtain a target-bound ticket and construct a socket. They do not guarantee an OPEN socket, delivery, reconnect/catch-up, authorization, or encryption. The host owns listeners and closing; high-level recovery remains an integration responsibility."
+        },
+        {
+          "kind": "link",
+          "target": "errors",
+          "text": "Look up selected client errors"
+        }
+      ]
+    },
+    {
+      "id": "authorization",
+      "title": "Prepared authorization APIs",
+      "summary": "An executable synthetic example—not a complete login flow.",
+      "blocks": [
+        {
+          "kind": "paragraph",
+          "text": "ApplicationDeviceAuthorizationApiResource submits prepared authorization material and validates response shape and correlation. It does not generate keys, open an approval page, install a session, or admit a participant to a Room."
+        },
+        {
+          "kind": "example",
+          "id": "authorization-request"
+        },
+        {
+          "kind": "heading",
+          "text": "Credentials and context"
+        },
+        {
+          "kind": "paragraph",
+          "text": "These operations explicitly use public credential mode and omit cookies and stored application-session credentials. The injected adapter in this example produces a synthetic response locally; no real authorization or enrollment occurs."
+        },
+        {
+          "kind": "paragraph",
+          "text": "For real operations, origin approval, freshness, expected identity, prepared proof, and durable retry decisions belong to the trusted enrollment owner. The returned URL is not an instruction to navigate without validation."
+        },
+        {
+          "kind": "link",
+          "target": "enrollment",
+          "text": "See how the public contracts compose"
+        }
+      ]
+    },
+    {
+      "id": "enrollment",
+      "title": "Resumable enrollment",
+      "summary": "Compose the state owner with trusted adapters; do not invent a vault.",
+      "blocks": [
+        {
+          "kind": "list",
+          "items": [
+            "Prepared: store the original material before approval HTTP.",
+            "Approval required: retain the approved URL, expiry, and original state.",
+            "Redeeming: persist the callback/code before proof construction and redemption.",
+            "Enrolled: persist the validated receipt before local activation and authentication."
+          ]
+        },
+        {
+          "kind": "paragraph",
+          "text": "Explicit resume reuses saved material after an ambiguous reply. A saved enrollment receipt can recover activation without redeeming again. The coordinator’s raw read() records are sensitive pending state, not presentation data."
+        },
+        {
+          "kind": "example",
+          "id": "enrollment-composition"
+        },
+        {
+          "kind": "heading",
+          "text": "Optional bound storage"
+        },
+        {
+          "kind": "paragraph",
+          "text": "The proposed V2 envelope retains the service, application, callback, identity, device, and credential-hash binding independently of the current draft. It is explicit opt-in: old V1 records are retained and rejected, not automatically migrated. A trusted host may initialize a binding only after genuine vault creation."
+        },
+        {
+          "kind": "paragraph",
+          "text": "The vault must provide encryption, authenticated metadata, real persistence and atomic compare-and-swap. Local retirement clears an eligible completed draft, not the service binding or remote identity. Production vault/KDF, Worker/device and browser factory adapters remain outside this preview."
+        },
+        {
+          "kind": "heading",
+          "text": "Proof construction"
+        },
+        {
+          "kind": "paragraph",
+          "text": "The V1 helper snapshots public input, builds the existing domain-separated transcript, asks the trusted signer to sign it, and self-checks the signature. The private key stays with the signer. A valid signature is not service approval or Room authority."
+        },
+        {
+          "kind": "link",
+          "target": "boundaries",
+          "text": "Review the remaining production gates"
+        }
+      ]
+    },
+    {
+      "id": "tokens",
+      "title": "Design tokens, not a component library",
+      "summary": "Bring your own interface without coupling it to the network SDK.",
+      "blocks": [
+        {
+          "kind": "paragraph",
+          "text": "The tokens package supplies semantic CSS variables, scoped themes, JSON, JavaScript and declarations. Import its scoped stylesheet and place data-nk-theme=\"dark\" or data-nk-theme=\"light\" on your theme boundary. This portal consumes the same tokens with local/system font fallbacks."
+        },
+        {
+          "kind": "paragraph",
+          "text": "Token output does not reset the document, download a font, style controls, or establish accessibility compliance. Keep a custom seed and its derived values on the same theme element and test your chosen contrast and states."
+        },
+        {
+          "kind": "heading",
+          "text": "Still planned"
+        },
+        {
+          "kind": "paragraph",
+          "text": "Reusable UI components, framework bindings and their documentation are separate roadmap work. This snapshot does not present nonexistent React, Vue or web-component packages as available. UI state must not manufacture security or delivery guarantees."
+        },
+        {
+          "kind": "link",
+          "target": "concepts",
+          "text": "Separate UI presentation from authority"
+        }
+      ]
+    },
+    {
+      "id": "errors",
+      "title": "Errors and recovery",
+      "summary": "Selected client failures, checked against the emitted implementation.",
+      "blocks": [
+        {
+          "kind": "paragraph",
+          "text": "This is a curated subset, not a complete error taxonomy. HTTP error codes can be service-defined; a retry hint is data, not permission to replay a durable write with new material. JSON, fetch, lifecycle, signer and vault errors may also propagate. Do not log raw provider errors or proof/code/verifier values."
+        },
+        {
+          "kind": "errors"
+        },
+        {
+          "kind": "link",
+          "target": "transport",
+          "text": "Response ownership and transport cancellation"
+        },
+        {
+          "kind": "link",
+          "target": "enrollment",
+          "text": "Durable enrollment recovery"
+        }
+      ]
+    },
+    {
+      "id": "boundaries",
+      "title": "Privacy and release boundaries",
+      "summary": "Make the remaining integration obligations visible.",
+      "blocks": [
+        {
+          "kind": "heading",
+          "text": "No production promises"
+        },
+        {
+          "kind": "paragraph",
+          "text": "The packages remain private, UNLICENSED and unpublished. Source equality, local test results and signature self-checks are not independent audits or evidence of end-to-end encrypted interoperability."
+        },
+        {
+          "kind": "heading",
+          "text": "Metadata and retention"
+        },
+        {
+          "kind": "paragraph",
+          "text": "The hosted service’s complete quota, retention, availability and metadata-exposure policies are not specified by these client previews. Do not infer them from a payload codec or connection API. A local UI that does not persist data cannot promise that browsers, extensions, crash reports or hosts retain nothing."
+        },
+        {
+          "kind": "heading",
+          "text": "Recovery and revocation"
+        },
+        {
+          "kind": "paragraph",
+          "text": "Local cancellation does not reverse a server write. Closing a socket or retiring a completed local enrollment record does not revoke remote sessions, identities or memberships. Recovery and revocation must be validated against the actual service and cryptographic owners."
+        },
+        {
+          "kind": "heading",
+          "text": "Before a production integration"
+        },
+        {
+          "kind": "list",
+          "items": [
+            "Verify the private workspace and security checks with the pinned toolchain.",
+            "Exercise real browser vault, key derivation, signing/device and activation adapters.",
+            "Validate live approval, browser/server TLS, cookies/CORS and socket admission.",
+            "Complete Rust/WASM/MLS and two-client encrypted interoperability, licensing and release review."
+          ]
+        },
+        {
+          "kind": "paragraph",
+          "text": "This portal is a generated local documentation artifact. Search is local, the page has no telemetry or persistence, and no hosting or deployment is configured. Network, storage and permission decisions in an application remain that application’s responsibility."
+        }
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": "invalid_client_api_path",
+      "module": "packages/client-runtime/dist/client-transport.js",
+      "guidance": "Correct the route. Do not pass arbitrary URLs or encoded routing separators to the transport."
+    },
+    {
+      "code": "response_body_too_large",
+      "module": "packages/client-runtime/dist/bounded-response.js",
+      "guidance": "The local body limit was exceeded. Handle the failure; do not silently disable limits."
+    },
+    {
+      "code": "invalid_application_session",
+      "module": "packages/client-runtime/dist/client-transport.js",
+      "guidance": "Supply a valid owned application session through the supported integration; do not guess credentials."
+    },
+    {
+      "code": "invalid_enterprise_authorization_request_receipt",
+      "module": "packages/client-runtime/dist/application-device-authorization-api-resource.js",
+      "guidance": "Reject the unexpected receipt. Do not treat its URL or identifiers as trusted."
+    },
+    {
+      "code": "organization_application_authorization_state_mismatch",
+      "module": "packages/client-runtime/dist/application-enrollment-coordinator.js",
+      "guidance": "Reject the callback and preserve pending state. Do not accept a different state to make the flow proceed."
+    },
+    {
+      "code": "application_enrollment_binding_mismatch",
+      "module": "packages/client-runtime/dist/application-enrollment-bound-vault.js",
+      "guidance": "Reopen only the original context. Do not erase or reinitialize existing binding data as a workaround."
+    },
+    {
+      "code": "enterprise_authorization_signature_self_check_failed",
+      "module": "packages/client-runtime/dist/application-enrollment-proof.js",
+      "guidance": "The signer result did not verify against the intended data and key. Stop; do not submit it."
+    },
+    {
+      "code": "enterprise_authorization_aborted",
+      "module": "packages/client-runtime/dist/application-enrollment-proof.js",
+      "guidance": "Local proof observation was canceled. The coordinator owns any explicit recovery using durable material."
+    }
+  ]
+}

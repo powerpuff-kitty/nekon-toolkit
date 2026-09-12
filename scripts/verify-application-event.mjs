@@ -162,7 +162,32 @@ try {
       catch (error) { if (error.code !== 'ERR_PACKAGE_PATH_NOT_EXPORTED') throw error; }
     }
   `]);
-  console.log(`PASS: deterministic clean builds, 2 tarballs / ${fileCount} allowlisted files, offline install, event/transport/lifecycle/authorization/enrollment/workbench consumer suites, strict types and both synthetic examples. Native HTTP: ${args[0] === '--http' ? 'included' : 'not run'}. No registry publication.`);
+  // Build the same local docs from actual installed SDK/runtime bytes. Token
+  // artifacts are verified in the separate token package lane. No docs source
+  // includes are fetched, and no example is replaced by untested prose.
+  await cp(rootFile('docs/portal'), join(directory, 'docs/portal'), {
+    recursive: true, filter: source => source !== rootFile('docs/portal/dist'),
+  });
+  for (const script of ['docs-portal.mjs', 'build-docs-portal.mjs', 'verify-application-event.mjs']) {
+    await cp(rootFile(`scripts/${script}`), join(directory, 'scripts', script));
+  }
+  await cp(rootFile('packages/tokens/package.json'), join(directory, 'packages/tokens/package.json'));
+  await cp(rootFile('packages/tokens/dist'), join(directory, 'packages/tokens/dist'), { recursive: true });
+  for (const example of ['application-event', 'application-authorization']) {
+    await cp(rootFile(`examples/${example}/example.mjs`), join(directory, `examples/${example}/example.mjs`));
+  }
+  await mkdir(join(directory, 'tests/enrollment'), { recursive: true });
+  await cp(rootFile('tests/enrollment/composition.ts'), join(directory, 'tests/enrollment/composition.ts'));
+  await cp(rootFile('tests/docs'), join(directory, 'tests/docs'), { recursive: true });
+  console.log(execute(process.execPath, ['scripts/build-docs-portal.mjs']));
+  execute(process.execPath, ['scripts/build-docs-portal.mjs'], root);
+  for (const artifact of ['index.html', 'api.json']) {
+    assert.deepEqual(await readFile(join(directory, `docs/portal/dist/${artifact}`)),
+      await readFile(rootFile(`docs/portal/dist/${artifact}`)),
+      `Docs artifact ${artifact} differs between installed and local packages`);
+  }
+  console.log(execute(process.execPath, ['--test', 'tests/docs/consumer.cases.mjs']));
+  console.log(`PASS: deterministic clean builds, 2 tarballs / ${fileCount} allowlisted files, offline install, event/transport/lifecycle/authorization/enrollment/workbench consumer suites, strict types, both synthetic examples and generated docs. Native HTTP: ${args[0] === '--http' ? 'included' : 'not run'}. No registry publication.`);
 } finally {
   await rm(directory, { recursive: true, force: true });
 }
