@@ -3,7 +3,7 @@
 Unpublished source preview of the existing NEKON SDK. Available entry points:
 `@nekon/sdk/application-event`, `@nekon/sdk/application-authorization`,
 `@nekon/sdk/application-enrollment`, `@nekon/sdk/application-enrollment-storage`,
-and `@nekon/sdk/application-enrollment-proof`.
+`@nekon/sdk/application-enrollment-proof`, and `@nekon/sdk/local-vault`.
 The root SDK, browser/MLS adapter and verified Room controller are deliberately
 unavailable until their complete dependency sets and integration gates are met.
 Version `0.1.0-extraction.0` remains private and licensing-gated; do not expect
@@ -70,7 +70,8 @@ identity/device IDs and credential hashes. Redemption carries the same request
 ID, returned code, original verifier, signing public key, MLS credential and proof
 signature. These values must be generated, bound and durably persisted by the
 higher-level enrollment owner. Its framework-neutral coordinator is available
-through application-enrollment; production device and vault adapters are not. Never use
+through application-enrollment; low-level vault source is in local-vault, while
+production KDF/device integration remains pending. Never use
 test zeros or new random retry material for an actual enrollment.
 
 The resource submits each call once in public credential mode, validates response
@@ -106,9 +107,23 @@ the helper clears owned arrays but cannot erase all retained strings or copies.
 The coordinator owns callback validation and durable retry decisions; proof creation
 performs no HTTP or storage and proves neither server approval nor Room authority.
 
-The production browser factory, vault/Worker/KDF adapters and MLS integration remain
+The production browser factory, Argon2/WASM/Worker/device and MLS integration remain
 separate. These exports do not constitute a complete browser login or encrypted
 messaging client. The repository integration guide records current checks and limits.
+
+## Local encrypted storage
+
+`@nekon/sdk/local-vault` re-exports `LocalSecretVault`, `IndexedDbVaultStorage`,
+the V1 policy and typed contracts from the runtime. It is compatible with the
+existing enrollment bound-store port. The host supplies the approved Argon2id-v1
+key derivation and browser lifecycle integration; no fallback provider is shipped.
+See the runtime guide for ownership, operation immutability and cleanup limits.
+
+The implementation is staged from a coordinated unmerged upstream candidate.
+Tests exercise actual vault encryption with synthetic persistence; an optional
+pinned Argon2 reference checks create/unlock/rewrap separately. Real IndexedDB,
+browser WASM and production enrollment interoperability remain unverified. Do not
+use the test fixtures as deployable storage or password-key derivation adapters.
 
 ## Build and verify
 

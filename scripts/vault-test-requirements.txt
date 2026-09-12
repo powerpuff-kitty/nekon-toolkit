@@ -1,0 +1,2 @@
+# Optional independent KDF reference tests only; never a package/runtime dependency.
+argon2-cffi==25.1.0

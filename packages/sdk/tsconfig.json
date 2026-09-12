@@ -33,6 +33,9 @@
       ],
       "@nekon/client-runtime/application-enrollment-proof": [
         "../client-runtime/dist/application-enrollment-proof.d.ts"
+      ],
+      "@nekon/client-runtime/local-vault": [
+        "../client-runtime/dist/local-vault.d.ts"
       ]
     }
   },
@@ -41,6 +44,7 @@
     "src/application-authorization.ts",
     "src/application-enrollment.ts",
     "src/application-enrollment-storage.ts",
-    "src/application-enrollment-proof.ts"
+    "src/application-enrollment-proof.ts",
+    "src/local-vault.ts"
   ]
 }

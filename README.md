@@ -27,6 +27,7 @@ See the [workbench guide](examples/developer-workbench/README.md).
 | `@nekon/sdk/application-enrollment` | Resumable four-state coordinator and typed adapter ports | Requires trusted device, encrypted vault and activation adapters |
 | `@nekon/sdk/application-enrollment-storage` | Service/device-bound store adapter | Proposed V2 format; explicit opt-in, no automatic migration |
 | `@nekon/sdk/application-enrollment-proof` | Existing V1 proof construction and signature self-check | Signer retains private-key ownership; no HTTP or Room authority |
+| `@nekon/sdk/local-vault` | Existing encrypted vault and IndexedDB storage source | Approved Argon2id provider required; production browser integration pending |
 
 The enrollment entries also have matching runtime subpaths and share one
 implementation. The authorization resource is also available through
@@ -36,7 +37,7 @@ same class and types rather than implementing a second client.
 All packages remain unpublished, private and licensing-gated. Transport and
 resource sources are staged from pinned upstream candidates, not a production
 release. The coordinator, storage binding and proof helper are available, but the
-complete browser enrollment factory, production vault/device adapters, full SDK
+complete browser enrollment factory, production KDF/device integration, full SDK
 root, verified Room owner, Rust/WASM integration and messenger migration remain
 pending. A local source merge does not approve a production rollout.
 See [licensing](LICENSE.md) and [security](SECURITY.md).
@@ -71,7 +72,7 @@ transport, transport-regression and authorization loopback tests. The default
 opens no test servers. Partial artifacts are removed after build failure.
 
 No check deploys or publishes packages. See the
-[latest integration checkpoint](docs/workbench-main-integration-2026-09-12.md)
+[latest integration checkpoint](docs/local-vault-extraction.md)
 for exact results, source-reconstruction details and unrun release gates.
 
 ## Browser checks
@@ -98,6 +99,7 @@ Existing token/event/transport browser runners remain available separately.
 [Enrollment coordinator](docs/application-enrollment-extraction.md) ·
 [Bound storage](docs/application-enrollment-storage.md) ·
 [Proof ownership](docs/application-enrollment-proof.md) ·
+[Local encrypted vault](docs/local-vault-extraction.md) ·
 [Token guide](packages/tokens/README.md) · [Architecture](ARCHITECTURE.md) ·
 [Design](DESIGN.md) · [Roadmap](ROADMAP.md) · [Contributing](CONTRIBUTING.md)
 

@@ -49,13 +49,13 @@ test('new exports preserve private packages and the existing dependency boundary
     assert.equal(config.compilerOptions.strict, true); assert.equal(config.compilerOptions.skipLibCheck, false);
   }
 });
-test('canonical package lane retains existing suites and registers proof checks without changing budgets', async () => {
+test('canonical package lane retains existing suites and registers proof checks with the current explicit artifact budget', async () => {
   const script = (await read('scripts/verify-application-event.mjs')).toString();
   for (const path of ['consumer.test.mjs','transport.test.mjs','lifecycle.cases.mjs','authorization.test.mjs',
     'enrollment/consumer.test.mjs','enrollment-storage/consumer.test.mjs','enrollment-proof/consumer.test.mjs',
     'enrollment-proof/consumer.ts']) assert.ok(script.includes(`'${path}'`));
   assert.ok(script.includes("rootFile('tests/enrollment-proof')"));
-  assert.ok(script.includes("'client-runtime': 112 * 1024, sdk: 48000"));
+  assert.ok(script.includes("'client-runtime': 160 * 1024, sdk: 48000"));
 });
 test('focused proof subset is explicit and unknown modes fail before verification starts', async () => {
   const script = (await read('scripts/check-enrollment.mjs')).toString();
