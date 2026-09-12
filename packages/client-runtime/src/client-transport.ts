@@ -460,11 +460,13 @@ function clientApiUrl(baseUrl: URL, path: string): URL {
   if (/%(?:2e|2f|5c|00|25)/iu.test(rawPath)) {
     throw new Error("invalid_client_api_path");
   }
-  const relative = path.replace(/^\/+|\/+$/gu, "");
+  // Normalize the route only: trailing query slashes are application data.
+  const relative = rawPath.replace(/^\/+|\/+$/gu, "");
+  const query = path.slice(rawPath.length);
   if (relative.length === 0 || relative.startsWith("?")) {
     throw new Error("invalid_client_api_path");
   }
-  const url = new URL(`${NEKON_CLIENT_API_PATH}/${relative}`, baseUrl);
+  const url = new URL(`${NEKON_CLIENT_API_PATH}/${relative}${query}`, baseUrl);
   if (url.origin !== baseUrl.origin || url.hash !== "" ||
       !url.pathname.startsWith(`${NEKON_CLIENT_API_PATH}/`)) {
     throw new Error("invalid_client_api_path");

@@ -94,6 +94,9 @@ function withMetadata(bounded: Response, original: Response): Response {
 }
 
 export function rejectDeclaredOversize(response: Response, maximumBytes: number): void {
+  // HEAD and 304 can describe a representation's size without transferring it.
+  // A null body has no decoded content to bound (RFC 9110, section 8.6).
+  if (response.body === null) return;
   const rawLength = response.headers.get("content-length");
   if (rawLength === null || !/^\d+$/.test(rawLength)) return;
   const length = Number(rawLength);

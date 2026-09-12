@@ -7,6 +7,10 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 
+const args = process.argv.slice(2);
+if (args.length > 1 || (args.length === 1 && args[0] !== '--http')) {
+  throw new Error('Usage: verify-application-event.mjs [--http]');
+}
 const root = fileURLToPath(new URL('../', import.meta.url));
 const directory = await mkdtemp(join(tmpdir(), 'nekon-client-consumer-'));
 const rootFile = path => join(root, path);
@@ -76,11 +80,18 @@ try {
     ['tests/application-event/consumer.ts', 'consumer.ts'],
     ['tests/transport/consumer.test.mjs', 'transport.test.mjs'],
     ['tests/transport/lifecycle.cases.mjs', 'lifecycle.cases.mjs'],
+    ['tests/transport/http-semantics.cases.mjs', 'http-semantics.cases.mjs'],
     ['tests/transport/consumer.ts', 'transport.ts'],
     ['tests/protocol-vectors/v1-application-event-payload.hex', 'vector.hex'],
     ['examples/application-event/example.mjs', 'example.mjs'],
   ]) await cp(rootFile(source), join(directory, target));
-  console.log(execute(process.execPath, ['--test', 'consumer.test.mjs', 'transport.test.mjs', 'lifecycle.cases.mjs']));
+  const tests = ['consumer.test.mjs', 'transport.test.mjs', 'lifecycle.cases.mjs', 'http-semantics.cases.mjs'];
+  if (args[0] === '--http') {
+    await cp(rootFile('tests/transport/http.cases.mjs'), join(directory, 'http.cases.mjs'));
+    await cp(rootFile('tests/transport/http-semantics-native.cases.mjs'), join(directory, 'http-semantics-native.cases.mjs'));
+    tests.push('http.cases.mjs', 'http-semantics-native.cases.mjs');
+  }
+  console.log(execute(process.execPath, ['--test', ...tests]));
   const localTsc = rootFile('node_modules/typescript/bin/tsc');
   execute(existsSync(localTsc) ? process.execPath : 'tsc', [
     ...(existsSync(localTsc) ? [localTsc] : []), '--noEmit', '--strict', '--skipLibCheck', 'false',
@@ -98,7 +109,7 @@ try {
       catch (error) { if (error.code !== 'ERR_PACKAGE_PATH_NOT_EXPORTED') throw error; }
     }
   `]);
-  console.log('PASS: deterministic clean builds, 2 tarballs / 16 allowlisted files, offline install, event/transport/lifecycle consumer suites, strict types and synthetic example. No registry publication.');
+  console.log(`PASS: deterministic clean builds, 2 tarballs / 16 allowlisted files, offline install, event/transport/lifecycle consumer suites, strict types and synthetic example. Native HTTP: ${args[0] === '--http' ? 'included' : 'not run'}. No registry publication.`);
 } finally {
   await rm(directory, { recursive: true, force: true });
 }
