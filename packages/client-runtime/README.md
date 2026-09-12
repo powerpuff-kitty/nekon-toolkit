@@ -1,10 +1,11 @@
 # @nekon/client-runtime — extraction preview
 
-Two implemented subpaths: `@nekon/client-runtime/application-event` and
-`@nekon/client-runtime/transport`. No framework, CSS, external runtime dependency
-or WASM is required for these slices. The root runtime, vault, Room state machine,
-MLS and synchronization owners are not included. Packages remain private,
-unpublished and licensing-gated at `0.1.0-extraction.0`.
+Three implemented subpaths: `@nekon/client-runtime/application-event`,
+`@nekon/client-runtime/transport`, and
+`@nekon/client-runtime/application-authorization`. No framework, CSS, external
+runtime dependency or WASM is required for these slices. The root runtime, vault,
+Room state machine, MLS and synchronization owners are not included. Packages
+remain private, unpublished and licensing-gated at `0.1.0-extraction.0`.
 
 ## Low-level transport
 
@@ -65,15 +66,55 @@ Prefer `@nekon/sdk/application-event` for custom payloads. Serialized bytes are
 Bind them to a verified outer envelope and use the actual encrypted Room owner.
 See the SDK guide for content ownership, clearing and JavaScript-erasure limits.
 
+## Application authorization
+
+Prefer the identical re-export in `@nekon/sdk/application-authorization`:
+
+```ts
+import { ApplicationDeviceAuthorizationApiResource } from '@nekon/sdk/application-authorization';
+import { NekonTransport } from '@nekon/client-runtime/transport';
+
+const api = new ApplicationDeviceAuthorizationApiResource(
+  new NekonTransport('https://service.example.invalid'),
+);
+// Inputs must be prepared and durably owned by the enrollment coordinator.
+// api.createEnterpriseAuthorizationRequest(applicationId, preparedRequest)
+// api.redeemEnterpriseAuthorization(applicationId, preparedProof)
+```
+
+The existing method names and routes retain `Enterprise` for compatibility; no
+renaming or new protocol is introduced here. Both calls explicitly use public
+credential mode and omit cookies/application sessions. The resource validates
+request shape, encoded-byte sizes and exact response fields, including request
+and application correlation. It does not generate keys, compute or verify PKCE
+proofs, open an approval page, capture callbacks, persist enrollment, authenticate
+a session, install an MLS state, or authorize Room membership.
+
+Pass trusted, immutable, already prepared inputs; this is not a sanitizer for
+arbitrary objects or a replacement for the encrypted enrollment coordinator.
+Preparation must bind identity, device, signing and MLS credentials; preserve
+exact pending material across ambiguous replies. A shaped receipt alone is not
+cryptographic verification, service-origin pinning, or proof of Room access.
+The host must check its approved approval origin, freshness and expected identity
+bindings before acting on a returned URL or receipt. The resource never navigates.
+
+HTTP failures expose `name: 'NekonHttpError'`, status, a restricted error code and
+optional bounded retry hints. Malformed error bodies fall back to `request_failed`.
+No retries are performed automatically. Hints are data, not authorization to retry
+with fresh material. Do not log proofs, codes, verifier strings, callbacks or raw
+errors. Validation, fetch and JSON failures can also throw; do not assume every
+exception is a `NekonHttpError`.
+
 ## Source ownership and verification
 
-The event codec remains unchanged from the pinned source. The transport sources
-match a separately reviewed upstream candidate, recorded in
-`transport-extraction.json`; that candidate is not a deployed or merged release.
-No independent toolkit transport fork should be maintained. Reconcile the same
-upstream candidate before private-consumer cutover. The full SDK is still absent.
+The event codec remains unchanged from the pinned source. Transport and resource
+sources match the coordinated upstream candidate, recorded in the extraction
+manifests; it is not a deployed or merged release. Do not maintain a separate
+runtime fork. The full SDK and private-consumer cutover remain pending.
 
 `node scripts/verify-application-event.mjs` at the repository root builds and
-checks both supported slices using real packages installed offline, rather than
-private source aliases. Browser checks use simulated HTTP/socket adapters and
-locally fulfilled module requests, not a production connection or CORS audit.
+checks these supported slices using actual packages installed offline, rather
+than private source aliases. Browser checks use synthetic adapters and locally
+fulfilled modules, not a production connection or CORS audit. The resource source
+is unchanged; its emitted relative imports receive a narrow, tested `.js` suffix
+normalization so Node ESM and public declarations resolve outside this workspace.

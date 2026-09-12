@@ -50,17 +50,22 @@ try {
   assert.deepEqual(await artifacts(), before, 'Generated source artifacts drift across identical builds');
   const tarballs = [];
   const modules = {
-    'client-runtime': ['application-event-payload', 'client-transport', 'client-request-transport', 'bounded-response'],
-    sdk: ['application-event'],
+    'client-runtime': ['application-event-payload', 'client-transport', 'client-request-transport', 'bounded-response',
+      'application-device-authorization-api-resource', 'client-binary-codec', 'client-api-error', 'client-response-validation'],
+    sdk: ['application-event', 'application-authorization'],
   };
+  // Preserve #36's authorization artifact budget; HTTP body limits are unrelated.
+  const budgets = { 'client-runtime': 64 * 1024, sdk: 48000 };
+  let fileCount = 0;
   for (const [leaf, names] of Object.entries(modules)) {
     const packed = JSON.parse(execute('npm', ['pack', '--ignore-scripts', '--json', '--pack-destination', directory], rootFile(`packages/${leaf}`), true));
     assert.equal(packed.length, 1);
     assert.deepEqual(packed[0].files.map(file => file.path).sort(), [
       'LICENSE.md', 'README.md', 'package.json', ...names.flatMap(name => [`dist/${name}.js`, `dist/${name}.d.ts`]),
     ].sort(), `Unexpected ${leaf} package files`);
-    assert.ok(packed[0].unpackedSize < 48000, `${leaf} exceeds the extraction size budget`);
+    assert.ok(packed[0].unpackedSize < budgets[leaf], `${leaf} exceeds the extraction size budget`);
     assert.equal(packed[0].bundled.length, 0);
+    fileCount += packed[0].files.length;
     console.log(`${leaf}: ${packed[0].files.length} allowlisted files, ${packed[0].unpackedSize} bytes unpacked.`);
     tarballs.push(join(directory, packed[0].filename));
   }
@@ -71,7 +76,9 @@ try {
     assert.equal(pkg.private, true);
     assert.equal(pkg.license, 'UNLICENSED');
     assert.equal(pkg.sideEffects, false);
-    assert.deepEqual(Object.keys(pkg.exports), leaf === 'sdk' ? ['./application-event'] : ['./application-event', './transport']);
+    assert.deepEqual(Object.keys(pkg.exports), leaf === 'sdk'
+      ? ['./application-event', './application-authorization']
+      : ['./application-event', './transport', './application-authorization']);
     assert.deepEqual(pkg.dependencies ?? {}, leaf === 'sdk' ? { '@nekon/client-runtime': '0.1.0-extraction.0' } : {});
     assert.match(pkg.scripts.prepublishOnly, /Publication disabled/);
   }
@@ -82,34 +89,43 @@ try {
     ['tests/transport/lifecycle.cases.mjs', 'lifecycle.cases.mjs'],
     ['tests/transport/http-semantics.cases.mjs', 'http-semantics.cases.mjs'],
     ['tests/transport/consumer.ts', 'transport.ts'],
+    ['tests/application-authorization/consumer.test.mjs', 'authorization.test.mjs'],
+    ['tests/application-authorization/consumer.ts', 'authorization.ts'],
     ['tests/protocol-vectors/v1-application-event-payload.hex', 'vector.hex'],
     ['examples/application-event/example.mjs', 'example.mjs'],
+    ['examples/application-authorization/example.mjs', 'authorization-example.mjs'],
   ]) await cp(rootFile(source), join(directory, target));
-  const tests = ['consumer.test.mjs', 'transport.test.mjs', 'lifecycle.cases.mjs', 'http-semantics.cases.mjs'];
+  const tests = ['consumer.test.mjs', 'transport.test.mjs', 'lifecycle.cases.mjs', 'http-semantics.cases.mjs', 'authorization.test.mjs'];
   if (args[0] === '--http') {
     await cp(rootFile('tests/transport/http.cases.mjs'), join(directory, 'http.cases.mjs'));
     await cp(rootFile('tests/transport/http-semantics-native.cases.mjs'), join(directory, 'http-semantics-native.cases.mjs'));
-    tests.push('http.cases.mjs', 'http-semantics-native.cases.mjs');
+    await cp(rootFile('tests/application-authorization/http.cases.mjs'), join(directory, 'authorization-http.cases.mjs'));
+    tests.push('http.cases.mjs', 'http-semantics-native.cases.mjs', 'authorization-http.cases.mjs');
   }
   console.log(execute(process.execPath, ['--test', ...tests]));
   const localTsc = rootFile('node_modules/typescript/bin/tsc');
   execute(existsSync(localTsc) ? process.execPath : 'tsc', [
     ...(existsSync(localTsc) ? [localTsc] : []), '--noEmit', '--strict', '--skipLibCheck', 'false',
-    '--target', 'ES2024', '--module', 'NodeNext', '--moduleResolution', 'NodeNext', 'consumer.ts', 'transport.ts',
+    '--target', 'ES2024', '--module', 'NodeNext', '--moduleResolution', 'NodeNext', 'consumer.ts', 'transport.ts', 'authorization.ts',
   ]);
-  console.log(execute(process.execPath, ['example.mjs']).trim());
+  for (const example of ['example.mjs', 'authorization-example.mjs']) {
+    console.log(execute(process.execPath, [example]).trim());
+  }
   execute(process.execPath, ['--input-type=module', '-e', `
     globalThis.fetch = () => { throw new Error('Unexpected network call'); };
     delete globalThis.WebSocket;
     const api = await import('@nekon/sdk/application-event');
     const transport = await import('@nekon/client-runtime/transport');
+    const authorization = await import('@nekon/sdk/application-authorization');
+    if (typeof authorization.ApplicationDeviceAuthorizationApiResource !== 'function') throw new Error('Unexpected authorization export');
     if (api.NEKON_APPLICATION_EVENT_SCHEMA !== 'nekon.application-event/1' || typeof transport.NekonTransport !== 'function') throw new Error('Unexpected exports');
-    for (const specifier of ['@nekon/client-runtime/dist/bounded-response.js', '@nekon/client-runtime/bounded-response']) {
+    const helpers = ['bounded-response', 'client-binary-codec', 'client-api-error', 'client-response-validation'];
+    for (const specifier of helpers.flatMap(name => ['@nekon/client-runtime/dist/' + name + '.js', '@nekon/client-runtime/' + name])) {
       try { await import(specifier); throw new Error('Private implementation exported'); }
       catch (error) { if (error.code !== 'ERR_PACKAGE_PATH_NOT_EXPORTED') throw error; }
     }
   `]);
-  console.log(`PASS: deterministic clean builds, 2 tarballs / 16 allowlisted files, offline install, event/transport/lifecycle consumer suites, strict types and synthetic example. Native HTTP: ${args[0] === '--http' ? 'included' : 'not run'}. No registry publication.`);
+  console.log(`PASS: deterministic clean builds, 2 tarballs / ${fileCount} allowlisted files, offline install, event/transport/lifecycle/authorization consumer suites, strict types and both synthetic examples. Native HTTP: ${args[0] === '--http' ? 'included' : 'not run'}. No registry publication.`);
 } finally {
   await rm(directory, { recursive: true, force: true });
 }
