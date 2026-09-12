@@ -9,7 +9,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "build": "node packages/tokens/scripts/build.mjs && node scripts/build-application-event.mjs",
+    "build": "node packages/tokens/scripts/build.mjs && node scripts/build-application-event.mjs && node scripts/build-developer-workbench.mjs",
     "test": "node --test tests/*.test.mjs && node scripts/verify-application-event.mjs",
     "check": "node scripts/verify.mjs && node scripts/verify-application-event.mjs",
     "test:package": "node scripts/check-package.mjs",
@@ -22,7 +22,9 @@
     "extraction:report": "node scripts/check-extraction.mjs",
     "build:events": "node scripts/build-application-event.mjs",
     "check:events": "node --test tests/application-event-source.test.mjs && node scripts/verify-application-event.mjs",
-    "test:events:browser": "python3 scripts/check-application-event-browser.py"
+    "test:events:browser": "python3 scripts/check-application-event-browser.py",
+    "check:workbench": "node scripts/verify-application-event.mjs",
+    "test:workbench:browser": "python3 scripts/check-developer-workbench-browser.py"
   },
   "devDependencies": {
     "typescript": "5.8.3"

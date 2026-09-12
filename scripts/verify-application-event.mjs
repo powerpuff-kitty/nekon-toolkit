@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtemp, writeFile, readFile, cp, rm, readdir } from 'node:fs/promises';
+import { mkdtemp, writeFile, readFile, cp, rm, readdir, mkdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -45,6 +45,7 @@ try {
   await writeFile(join(directory, 'user.npmrc'), '');
   await writeFile(join(directory, 'global.npmrc'), '');
   console.log(execute(process.execPath, ['scripts/build-application-event.mjs'], root).trim());
+  execute(process.execPath, ['packages/tokens/scripts/build.mjs'], root);
   const before = await artifacts();
   execute(process.execPath, ['scripts/build-application-event.mjs'], root);
   assert.deepEqual(await artifacts(), before, 'Generated source artifacts drift across identical builds');
@@ -101,13 +102,35 @@ try {
   await cp(rootFile('tests/enrollment-storage'), join(directory, 'enrollment-storage'), { recursive: true });
   await cp(rootFile('tests/enrollment-proof'), join(directory, 'enrollment-proof'), { recursive: true });
   const tests = ['consumer.test.mjs', 'transport.test.mjs', 'lifecycle.cases.mjs', 'http-semantics.cases.mjs', 'authorization.test.mjs',
-    'enrollment/consumer.test.mjs', 'enrollment-storage/consumer.test.mjs', 'enrollment-proof/consumer.test.mjs'];
+    'enrollment/consumer.test.mjs', 'enrollment-storage/consumer.test.mjs', 'enrollment-proof/consumer.test.mjs',
+    'tests/developer-workbench/workbench.test.mjs'];
   if (args[0] === '--http') {
     await cp(rootFile('tests/transport/http.cases.mjs'), join(directory, 'http.cases.mjs'));
     await cp(rootFile('tests/transport/http-semantics-native.cases.mjs'), join(directory, 'http-semantics-native.cases.mjs'));
     await cp(rootFile('tests/application-authorization/http.cases.mjs'), join(directory, 'authorization-http.cases.mjs'));
     tests.push('http.cases.mjs', 'http-semantics-native.cases.mjs', 'authorization-http.cases.mjs');
   }
+  // Exercise the workbench against the same installed canonical tarballs. The
+  // mirrors below are byte-for-byte installed files for its artifact builder,
+  // not source aliases or replacement package manifests.
+  await cp(rootFile('tests/developer-workbench'), join(directory, 'tests/developer-workbench'), { recursive: true });
+  await cp(rootFile('examples/developer-workbench'), join(directory, 'examples/developer-workbench'), {
+    recursive: true, filter: source => source !== rootFile('examples/developer-workbench/dist'),
+  });
+  await mkdir(join(directory, 'scripts'), { recursive: true });
+  await cp(rootFile('scripts/build-developer-workbench.mjs'), join(directory, 'scripts/build-developer-workbench.mjs'));
+  for (const leaf of ['client-runtime', 'sdk']) {
+    await cp(join(directory, `node_modules/@nekon/${leaf}`), join(directory, `packages/${leaf}`), { recursive: true });
+  }
+  await mkdir(join(directory, 'packages/tokens/dist'), { recursive: true });
+  await cp(rootFile('packages/tokens/dist/scoped.css'), join(directory, 'packages/tokens/dist/scoped.css'));
+  execute(process.execPath, ['scripts/build-developer-workbench.mjs']);
+  execute(process.execPath, ['scripts/build-developer-workbench.mjs'], root);
+  assert.deepEqual(
+    await readFile(join(directory, 'examples/developer-workbench/dist/index.html')),
+    await readFile(rootFile('examples/developer-workbench/dist/index.html')),
+    'Workbench built from installed packages differs from local build',
+  );
   console.log(execute(process.execPath, ['--test', ...tests]));
   const localTsc = rootFile('node_modules/typescript/bin/tsc');
   execute(existsSync(localTsc) ? process.execPath : 'tsc', [
@@ -139,7 +162,7 @@ try {
       catch (error) { if (error.code !== 'ERR_PACKAGE_PATH_NOT_EXPORTED') throw error; }
     }
   `]);
-  console.log(`PASS: deterministic clean builds, 2 tarballs / ${fileCount} allowlisted files, offline install, event/transport/lifecycle/authorization/enrollment consumer suites, strict types and both synthetic examples. Native HTTP: ${args[0] === '--http' ? 'included' : 'not run'}. No registry publication.`);
+  console.log(`PASS: deterministic clean builds, 2 tarballs / ${fileCount} allowlisted files, offline install, event/transport/lifecycle/authorization/enrollment/workbench consumer suites, strict types and both synthetic examples. Native HTTP: ${args[0] === '--http' ? 'included' : 'not run'}. No registry publication.`);
 } finally {
   await rm(directory, { recursive: true, force: true });
 }

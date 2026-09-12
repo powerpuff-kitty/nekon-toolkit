@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en" data-nk-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="__CSP__">
+  <title>NEKON Developer Workbench — local preview</title>
+  <style>__STYLE__</style>
+  <script type="importmap">__IMPORTS__</script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to workbench</a>
+  <header class="topbar"><a class="brand" href="#main">NEKON<span> / DEVELOPERS</span></a>
+    <span class="badge">LOCAL PREVIEW · NO CLOUD CONNECTION</span></header>
+  <main id="main">
+    <section class="intro" aria-labelledby="title">
+      <div><p class="eyebrow">Developer workbench / 01</p>
+        <h1 id="title">Build the payload.<br><span>Inspect every byte.</span></h1>
+        <p class="lede">A working local playground for the public application-event SDK.<br>Compose, encode and inspect. No account, server or message delivery.</p></div>
+      <aside class="boundary"><strong>Encoding is not encryption.</strong>
+        <p>This page handles plaintext test data. It does not establish identity, Room membership, permissions or delivery.</p>
+        <p>Use synthetic content only. Nothing is saved by this page or sent to NEKON.</p></aside>
+    </section>
+    <div class="milestones" aria-label="Preview capability boundaries">
+      <div><span class="step">01</span><strong>Event payloads</strong><span id="loadState">Loading local SDK…</span></div>
+      <div><span class="step">02</span><strong>Encrypted messaging</strong><span>Not connected in this preview</span></div>
+      <div><span class="step">03</span><strong>Cloud console</strong><span>Provisioning not available here</span></div>
+    </div>
+    <noscript><p>This example requires JavaScript. No Cloud service is connected.</p></noscript>
+    <fieldset id="workspace" disabled>
+      <legend class="sr-only">Local event workbench</legend>
+      <div class="workspace">
+        <section class="panel" aria-labelledby="compose-title">
+          <div class="panel-head"><h2 id="compose-title">Compose an event</h2><span class="small">Synthetic input</span></div>
+          <div class="samples" role="group" aria-label="Load a synthetic sample">
+            <button type="button" data-sample="message">Text message</button>
+            <button type="button" data-sample="telemetry">Sensor reading</button>
+            <button type="button" data-sample="command">Device command</button>
+          </div>
+          <form id="composer" autocomplete="off" novalidate>
+            <p class="hint">A command sample is inert data. It never controls a device.</p>
+            <label for="type">Application event type</label><input id="type" maxlength="255" placeholder="com.example.chat.message" spellcheck="false">
+            <div class="grid-two"><div><label for="contentType">Content type</label><select id="contentType"><option value="text/plain">text/plain</option><option value="application/json">application/json</option></select></div>
+              <div><label for="schemaVersion">Schema version</label><input id="schemaVersion" maxlength="5" inputmode="numeric" placeholder="1"></div></div>
+            <label for="content">Test content <span class="hint">48 KiB maximum, UTF-8</span></label>
+            <textarea id="content" rows="7" maxlength="49152" spellcheck="false" placeholder="Load a sample above to begin."></textarea>
+            <details><summary>Room and event scope <span class="hint">Synthetic IDs, not authority</span></summary>
+              <label for="roomId">Room ID</label><input id="roomId" maxlength="133" spellcheck="false" placeholder="room_0123456789abcdef">
+              <label for="eventId">Event ID</label><input id="eventId" maxlength="132" spellcheck="false" placeholder="evt_0123456789abcdef"></details>
+            <div class="actions"><button type="submit" class="primary">Encode and inspect <span aria-hidden="true">↗</span></button><button type="button" id="clearAll">Clear all</button></div>
+          </form>
+          <details id="importSection"><summary>Inspect an existing hex payload</summary>
+            <form id="inspectForm" autocomplete="off"><label for="hexInput">Canonical application-event bytes</label>
+              <textarea id="hexInput" maxlength="196608" rows="4" spellcheck="false" placeholder="Paste synthetic hexadecimal byte pairs. Never paste tokens or private keys."></textarea>
+              <button type="submit">Inspect hex</button></form></details>
+        </section>
+        <section class="panel results" aria-labelledby="inspect-title">
+          <div class="panel-head"><h2 id="inspect-title">Payload inspector</h2><span id="resultState" class="small">Awaiting input</span></div>
+          <div class="counters"><div><strong id="byteCount">—</strong><span>encoded bytes</span></div><div><strong id="contentCount">—</strong><span>content bytes</span></div><div><strong>V1</strong><span>application-event schema</span></div></div>
+          <h3>Decoded envelope</h3><pre id="metadata" tabindex="0">No event inspected.</pre>
+          <div class="section-label"><h3>Decoded content</h3><span id="representation" class="small">No content</span></div>
+          <pre id="decoded" tabindex="0">Content will appear here as text, never as HTML.</pre>
+          <label for="encoded">Canonical bytes <span class="hint">Hexadecimal · not ciphertext</span></label>
+          <textarea id="encoded" rows="4" readonly spellcheck="false"></textarea>
+          <button type="button" id="reinspect" disabled>Re-inspect these bytes</button>
+        </section>
+      </div>
+    </fieldset>
+    <p id="status" class="status" role="status" aria-live="polite" aria-atomic="true">Preparing the local SDK. No connection is being made.</p>
+    <section class="next" aria-labelledby="next-title"><h2 id="next-title">What is not in this preview?</h2>
+      <p>Cloud project creation, device enrollment, verified Room admission, encrypted send/receive, usage analytics and billing. This workbench is a developer tool—not a functioning messaging service.</p>
+      <p class="small">No login, analytics, remote assets or persistent browser storage. “Clear all” clears this UI; browser history, extensions and memory copies are outside its guarantees.</p></section>
+    <footer><span>NEKON TOOLKIT / SOURCE PREVIEW</span><span>Public SDK consumer · No private app imports · No bundled fonts</span></footer>
+  </main>
+  <script type="module">__APP__</script>
+</body>
+</html>

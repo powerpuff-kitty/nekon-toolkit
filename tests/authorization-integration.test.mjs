@@ -16,6 +16,7 @@ test('default package lane registers both transport regressions and authorizatio
     'consumer.test.mjs', 'transport.test.mjs', 'lifecycle.cases.mjs',
     'http-semantics.cases.mjs', 'authorization.test.mjs',
     'enrollment/consumer.test.mjs', 'enrollment-storage/consumer.test.mjs', 'enrollment-proof/consumer.test.mjs',
+    'tests/developer-workbench/workbench.test.mjs',
   ]);
   for (const path of ['tests/transport/http-semantics.cases.mjs', 'tests/application-authorization/consumer.test.mjs']) {
     assert.ok(source.includes(`'${path}'`));

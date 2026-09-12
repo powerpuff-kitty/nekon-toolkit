@@ -2,6 +2,19 @@
 
 Public developer tools for building private communication experiences on NEKON.
 
+## Local developer workbench
+
+```sh
+npm run check:workbench
+```
+
+The generated `examples/developer-workbench/dist/index.html` lets you compose
+synthetic events and inspect metadata, plaintext and canonical bytes using the
+public SDK. It has no login, network backend or browser persistence. Encoding is
+not encryption; do not enter real secrets. The command retains all client-package
+checks and tests the UI model against installed canonical packages.
+See the [workbench guide](examples/developer-workbench/README.md).
+
 ## Implemented source previews
 
 | Surface | Available here | Important boundary |
@@ -58,7 +71,7 @@ transport, transport-regression and authorization loopback tests. The default
 opens no test servers. Partial artifacts are removed after build failure.
 
 No check deploys or publishes packages. See the
-[latest integration checkpoint](docs/enrollment-main-integration-2026-09-12.md)
+[latest integration checkpoint](docs/workbench-main-integration-2026-09-12.md)
 for exact results, source-reconstruction details and unrun release gates.
 
 ## Browser checks
