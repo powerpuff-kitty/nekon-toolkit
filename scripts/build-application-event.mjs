@@ -2,11 +2,10 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
 import { existsSync } from 'node:fs';
+import { rm } from 'node:fs/promises';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const localTsc = resolve(root, 'node_modules/typescript/bin/tsc');
-// Prefer the lockfile-installed compiler. PATH fallback is for an explicitly
-// provisioned contributor toolchain, never a runtime or package dependency.
 const command = existsSync(localTsc) ? process.execPath : 'tsc';
 const prefix = existsSync(localTsc) ? [localTsc] : [];
 function run(args) {
@@ -18,9 +17,18 @@ function run(args) {
   }
   return result.stdout.trim();
 }
-if (run(['--version']) !== 'Version 5.8.3') {
-  throw new Error('This extraction slice requires pinned TypeScript 5.8.3; run pnpm install --frozen-lockfile.');
+// Clean both outputs before compilation; a failed build must not leave a stale
+// previously valid artifact available for an accidental pack/install.
+const directories = ['client-runtime', 'sdk'].map(leaf => resolve(root, 'packages', leaf, 'dist'));
+for (const path of directories) await rm(path, { recursive: true, force: true });
+try {
+  if (run(['--version']) !== 'Version 5.8.3') {
+    throw new Error('This extraction slice requires pinned TypeScript 5.8.3; run pnpm install --frozen-lockfile.');
+  }
+  run(['--project', 'packages/client-runtime/tsconfig.json']);
+  run(['--project', 'packages/sdk/tsconfig.json']);
+} catch (error) {
+  for (const path of directories) await rm(path, { recursive: true, force: true });
+  throw error;
 }
-run(['--project', 'packages/client-runtime/tsconfig.json']);
-run(['--project', 'packages/sdk/tsconfig.json']);
-console.log('Application-event slice built with TypeScript 5.8.3; no WASM, network or publication.');
+console.log('Extracted runtime and application-event SDK built with TypeScript 5.8.3; no publication.');
