@@ -2,6 +2,17 @@
 
 Public developer tools for building private communication experiences on NEKON.
 
+## Local developer documentation
+
+Run `npm run build:docs` with the pinned toolchain to generate
+`docs/portal/dist/index.html` and its machine-readable `api.json`. The portal
+includes local search, guides, exact maintained examples, and references generated
+from all supported package exports and emitted declarations. It labels execution
+contexts, credentials, unpublished packages and incomplete production adapters.
+No network, login, hosting or publication is added. See [portal authoring and
+verification](docs/portal/README.md). `npm run check:docs` exercises the generator
+and the full installed-client check; the default root check retains these gates.
+
 ## Local developer workbench
 
 ```sh
@@ -72,7 +83,7 @@ transport, transport-regression and authorization loopback tests. The default
 opens no test servers. Partial artifacts are removed after build failure.
 
 No check deploys or publishes packages. See the
-[latest integration checkpoint](docs/local-vault-extraction.md)
+[latest integration checkpoint](docs/local-vault-docs-integration-2026-09-13.md)
 for exact results, source-reconstruction details and unrun release gates.
 
 ## Browser checks
@@ -130,3 +141,22 @@ node scripts/sync-project.mjs --apply
 
 It preserves existing fields and rejects ambiguous inventories before writes.
 See [Project synchronization](docs/project-sync.md). No GitHub Actions are added.
+
+## Local-vault verification status
+
+The local-vault source remains a draft integration. Its two export references and
+ownership guide are generated with the rest of the portal; the host-composition
+example is type-checked, not executed. Native IndexedDB browser verification is
+still blocked at normal page navigation. Passing reference tests is not a browser
+storage or production Argon2/WASM result.
+
+With the separately provisioned pinned reference dependency:
+
+```sh
+NEKON_VAULT_ARGON2_TESTS=1 node scripts/verify-application-event.mjs --http
+python3 scripts/check-local-vault-browser.py --chromium /path/to/chromium
+```
+
+The second command is a separate real-browser gate and currently fails in this
+execution environment. No navigation-policy workaround or fallback KDF is used.
+See [the reconciliation checkpoint](docs/local-vault-docs-integration-2026-09-13.md).

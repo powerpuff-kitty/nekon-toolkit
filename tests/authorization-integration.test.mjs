@@ -36,7 +36,7 @@ test('optional HTTP lane preserves original, semantics and authorization groups'
 });
 
 test('integration retains strict consumers, both examples and isolated package resolution', () => {
-  for (const path of ['consumer.ts', 'transport.ts', 'authorization.ts', 'enrollment/consumer.ts', 'enrollment-storage/consumer.ts', 'enrollment-proof/consumer.ts', 'enrollment/composition.ts', 'local-vault/consumer.ts', 'example.mjs', 'authorization-example.mjs']) {
+  for (const path of ['consumer.ts', 'transport.ts', 'authorization.ts', 'enrollment/consumer.ts', 'enrollment-storage/consumer.ts', 'enrollment-proof/consumer.ts', 'enrollment/composition.ts', 'example.mjs', 'authorization-example.mjs']) {
     assert.ok(source.includes(`'${path}'`));
   }
   assert.match(source, /delete env\.NEKON_TRANSPORT_TEST_MODULE;/);

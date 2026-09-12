@@ -11,10 +11,11 @@ const args = process.argv.slice(2);
 if (args.length > 1 || (args.length === 1 && args[0] !== '--http')) {
   throw new Error('Usage: verify-application-event.mjs [--http]');
 }
-const includeArgon2 = process.env.NEKON_VAULT_ARGON2_TESTS === '1';
-if (process.env.NEKON_VAULT_ARGON2_TESTS !== undefined && !includeArgon2) {
-  throw new Error('NEKON_VAULT_ARGON2_TESTS must be 1 when supplied');
+const argon2Mode = process.env.NEKON_VAULT_ARGON2_TESTS;
+if (argon2Mode !== undefined && argon2Mode !== '0' && argon2Mode !== '1') {
+  throw new Error('NEKON_VAULT_ARGON2_TESTS must be 0 or 1 when provided');
 }
+const includeArgon2 = process.env.NEKON_VAULT_ARGON2_TESTS === '1';
 const root = fileURLToPath(new URL('../', import.meta.url));
 const directory = await mkdtemp(join(tmpdir(), 'nekon-client-consumer-'));
 const rootFile = path => join(root, path);
@@ -61,8 +62,7 @@ try {
       'application-enrollment-storage', 'application-enrollment-bound-vault', 'application-enrollment-proof', 'local-vault'],
     sdk: ['application-event', 'application-authorization', 'application-enrollment', 'application-enrollment-storage', 'application-enrollment-proof', 'local-vault'],
   };
-  // The local vault adds an independent emitted module and declarations; this is
-  // an artifact budget, not a cryptographic, HTTP-response or record-size limit.
+  // Preserve #39's existing vault artifact budget; HTTP and KDF limits are unrelated.
   const budgets = { 'client-runtime': 160 * 1024, sdk: 48000 };
   let fileCount = 0;
   for (const [leaf, names] of Object.entries(modules)) {
@@ -143,7 +143,7 @@ try {
   execute(existsSync(localTsc) ? process.execPath : 'tsc', [
     ...(existsSync(localTsc) ? [localTsc] : []), '--noEmit', '--strict', '--skipLibCheck', 'false',
     '--target', 'ES2024', '--module', 'NodeNext', '--moduleResolution', 'NodeNext', 'consumer.ts', 'transport.ts', 'authorization.ts',
-    'enrollment/consumer.ts', 'enrollment-storage/consumer.ts', 'enrollment-proof/consumer.ts', 'enrollment/composition.ts', 'local-vault/consumer.ts',
+    'enrollment/consumer.ts', 'enrollment-storage/consumer.ts', 'enrollment-proof/consumer.ts', 'enrollment/composition.ts', 'local-vault/consumer.ts', 'local-vault/composition.ts',
   ]);
   for (const example of ['example.mjs', 'authorization-example.mjs']) {
     console.log(execute(process.execPath, [example]).trim());
@@ -171,7 +171,34 @@ try {
       catch (error) { if (error.code !== 'ERR_PACKAGE_PATH_NOT_EXPORTED') throw error; }
     }
   `]);
-  console.log(`PASS: deterministic clean builds, 2 tarballs / ${fileCount} allowlisted files, offline install, event/transport/lifecycle/authorization/enrollment/workbench consumer suites, strict types and both synthetic examples. Native HTTP: ${args[0] === '--http' ? 'included' : 'not run'}. Argon2 reference: ${includeArgon2 ? 'included' : 'not run'}. No registry publication.`);
+  // Build the same local docs from actual installed SDK/runtime bytes. Token
+  // artifacts are verified in the separate token package lane. No docs source
+  // includes are fetched, and no example is replaced by untested prose.
+  await cp(rootFile('docs/portal'), join(directory, 'docs/portal'), {
+    recursive: true, filter: source => source !== rootFile('docs/portal/dist'),
+  });
+  for (const script of ['docs-portal.mjs', 'build-docs-portal.mjs', 'verify-application-event.mjs']) {
+    await cp(rootFile(`scripts/${script}`), join(directory, 'scripts', script));
+  }
+  await cp(rootFile('packages/tokens/package.json'), join(directory, 'packages/tokens/package.json'));
+  await cp(rootFile('packages/tokens/dist'), join(directory, 'packages/tokens/dist'), { recursive: true });
+  for (const example of ['application-event', 'application-authorization']) {
+    await cp(rootFile(`examples/${example}/example.mjs`), join(directory, `examples/${example}/example.mjs`));
+  }
+  await mkdir(join(directory, 'tests/enrollment'), { recursive: true });
+  await cp(rootFile('tests/enrollment/composition.ts'), join(directory, 'tests/enrollment/composition.ts'));
+  await mkdir(join(directory, 'tests/local-vault'), { recursive: true });
+  await cp(rootFile('tests/local-vault/composition.ts'), join(directory, 'tests/local-vault/composition.ts'));
+  await cp(rootFile('tests/docs'), join(directory, 'tests/docs'), { recursive: true });
+  console.log(execute(process.execPath, ['scripts/build-docs-portal.mjs']));
+  execute(process.execPath, ['scripts/build-docs-portal.mjs'], root);
+  for (const artifact of ['index.html', 'api.json']) {
+    assert.deepEqual(await readFile(join(directory, `docs/portal/dist/${artifact}`)),
+      await readFile(rootFile(`docs/portal/dist/${artifact}`)),
+      `Docs artifact ${artifact} differs between installed and local packages`);
+  }
+  console.log(execute(process.execPath, ['--test', 'tests/docs/consumer.cases.mjs']));
+  console.log(`PASS: deterministic clean builds, 2 tarballs / ${fileCount} allowlisted files, offline install, event/transport/lifecycle/authorization/enrollment/workbench consumer suites, strict types, both synthetic examples and generated docs. Argon2 reference: ${includeArgon2 ? 'included' : 'not run'}. Native HTTP: ${args[0] === '--http' ? 'included' : 'not run'}. No registry publication.`);
 } finally {
   await rm(directory, { recursive: true, force: true });
 }
