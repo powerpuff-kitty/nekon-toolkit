@@ -8,7 +8,7 @@ const manifest=JSON.parse(await read('local-vault-extraction.json'));
 
 test('local vault records its exact coordinated source and unavailable production KDF',()=>{
   assert.equal(manifest.sourceRepository,'powerpuff-kitty/nekon');
-  assert.equal(manifest.sourceCommit,'624633e89773b0b75d8656d5b059d2a43bacc535');
+  assert.equal(manifest.sourceCommit,'22ed8a9e810e3dab52b4e8dae03d93276d9889a3');
   assert.equal(manifest.publicationAllowed,false);assert.equal(manifest.productionKdfIncluded,false);
   assert.match(manifest.sourceStatus,/unmerged/);assert.match(manifest.ownership,/not migrated/);
   assert.deepEqual(manifest.runtimeDependencies,[]);assert.equal(manifest.files.length,1);
@@ -16,7 +16,7 @@ test('local vault records its exact coordinated source and unavailable productio
 test('vault source matches the reviewed upstream blob and SHA-256',async()=>{
   const entry=manifest.files[0];assert.equal(entry.path,'packages/client-runtime/src/local-vault.ts');
   const bytes=await read(entry.path);assert.equal(entry.bytes,bytes.length);
-  assert.equal(entry.gitBlob,'4b6c00090e08872b070cb863ed237e1140dabbf7');
+  assert.equal(entry.gitBlob,'8d1d61bf391bfb472d2df4741c6cc7defe871d22');
   assert.equal(createHash('sha1').update(`blob ${bytes.length}\0`).update(bytes).digest('hex'),entry.gitBlob);
   assert.equal(createHash('sha256').update(bytes).digest('hex'),entry.sha256);
   assert.doesNotMatch(bytes.toString(),/^import\b/m);
@@ -48,4 +48,13 @@ test('Argon2 reference is optional pinned test tooling, not an implementation fa
   const sdk=(await read('packages/sdk/src/local-vault.ts')).toString();
   assert.match(sdk,/from "@nekon\/client-runtime\/local-vault"/);
   assert.doesNotMatch(sdk,/spawnSync|deriveKey\s*[:=]/);
+});
+
+// The same event-level regressions are staged upstream; not native persistence evidence.
+test('abort settlement cases are preserved and registered in installed vault consumers',async()=>{
+  const bytes=await read('tests/local-vault/idb-settlement.cases.mjs');
+  assert.equal(createHash('sha1').update(`blob ${bytes.length}\0`).update(bytes).digest('hex'),'541c629a6524dec61e4eba1d82c43433f70ee037');
+  const cases=(await read('tests/local-vault/consumer.test.mjs')).toString();
+  assert.match(cases,/import \{ registerIdbSettlementCases \} from '\.\/idb-settlement\.cases\.mjs'/);
+  assert.match(cases,/registerIdbSettlementCases\(test, \{ LocalSecretVault, IndexedDbVaultStorage \}\)/);
 });

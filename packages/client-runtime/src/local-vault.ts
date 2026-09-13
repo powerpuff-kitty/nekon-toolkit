@@ -978,6 +978,8 @@ export class IndexedDbVaultStorage implements LocalVaultStorage {
       transaction.oncomplete = () => resolve();
       transaction.onerror = () =>
         reject(new Error("vault_storage_write_failed"));
+      transaction.onabort = () =>
+        reject(new Error("vault_storage_write_failed"));
     });
   }
 
@@ -1033,6 +1035,8 @@ export class IndexedDbVaultStorage implements LocalVaultStorage {
       headerRead.onerror = () => reject(new Error("vault_storage_read_failed"));
       transaction.oncomplete = () => resolve();
       transaction.onerror = () =>
+        reject(new Error("vault_storage_write_failed"));
+      transaction.onabort = () =>
         reject(new Error("vault_storage_write_failed"));
     });
   }

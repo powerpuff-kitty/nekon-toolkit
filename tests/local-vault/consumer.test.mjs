@@ -212,3 +212,7 @@ test('IndexedDB adapter rejects unavailable factories and invalid database names
   assert.throws(() => new IndexedDbVaultStorage('valid', undefined), /invalid_indexeddb_vault_configuration/);
   for (const name of ['', 'a/b', 'a'.repeat(129)]) assert.throws(() => new IndexedDbVaultStorage(name, {}), /invalid_indexeddb_vault_configuration/);
 });
+
+// Explicit manual event-delivery regressions; not a native IndexedDB gate.
+import { registerIdbSettlementCases } from './idb-settlement.cases.mjs';
+registerIdbSettlementCases(test, { LocalSecretVault, IndexedDbVaultStorage });
