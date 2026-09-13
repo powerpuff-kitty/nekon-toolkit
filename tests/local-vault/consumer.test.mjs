@@ -216,3 +216,7 @@ test('IndexedDB adapter rejects unavailable factories and invalid database names
 // Explicit manual event-delivery regressions; not a native IndexedDB gate.
 import { registerIdbSettlementCases } from './idb-settlement.cases.mjs';
 registerIdbSettlementCases(test, { LocalSecretVault, IndexedDbVaultStorage });
+
+// Manual connection lifecycle events supplement, not replace, native browser tests.
+import { registerIdbConnectionCases } from './idb-connection.cases.mjs';
+registerIdbConnectionCases(test, { IndexedDbVaultStorage });

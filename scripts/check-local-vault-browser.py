@@ -110,6 +110,27 @@ def main() -> None:
                   const final=make();await reject(final.unlock(secret),'vault_unlock_failed');await final.unlock('synthetic-updated-secret');
                   check(final.state==='unlocked','secret rewrap survives IndexedDB reopen');
                   await final.destroy();check(await storage.readHeader()===null&&await storage.readRecord('example:two')===null,'destroy removes disposable test records');
+                  // Separate disposable namespace: exercise the SAME adapter across
+                  // real versionchange, VersionError, deletion and explicit reopen.
+                  const connectionDb = 'nekon-test-connection-' + crypto.randomUUID();
+                  const connectionStore = new IndexedDbVaultStorage(connectionDb);
+                  const requestResult = request => new Promise((resolve,reject) => {
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                  });
+                  const initial = await connectionStore.readHeader();
+                  check(initial === null, 'new native connection namespace has no vault header');
+                  const upgraded = await requestResult(indexedDB.open(connectionDb,2));
+                  upgraded.close();
+                  await reject(connectionStore.readHeader(),'vault_storage_open_failed');
+                  check(true, 'versionchange releases native connection and retains version-1 policy');
+                  await requestResult(indexedDB.deleteDatabase(connectionDb));
+                  check(await connectionStore.readHeader() === null,
+                    'same adapter recovers after terminal native version error without creating vault keys');
+                  await requestResult(indexedDB.deleteDatabase(connectionDb));
+                  check(await connectionStore.readHeader() === null,
+                    'same adapter reopens after native deletion versionchange without a stale handle');
+                  await requestResult(indexedDB.deleteDatabase(connectionDb));
                   return checks;
                 }''')
                 if unexpected:

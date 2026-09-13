@@ -1131,9 +1131,33 @@ export class IndexedDbVaultStorage implements LocalVaultStorage {
   }
 
   #open(): Promise<IDBDatabase> {
-    this.#database ??= new Promise<IDBDatabase>((resolve, reject) => {
-      const request = this.#indexedDb.open(this.#databaseName, 1);
+    if (this.#database !== undefined) return this.#database;
+    let settled = false;
+    let finished = false;
+    // Stale connection events must never clear a more recent open attempt.
+    const forget = (): void => {
+      if (this.#database === opening) this.#database = undefined;
+    };
+    const opening = new Promise<IDBDatabase>((resolve, reject) => {
+      let request: IDBOpenDBRequest;
+      try {
+        request = this.#indexedDb.open(this.#databaseName, 1);
+      } catch {
+        finished = true;
+        reject(new Error("vault_storage_open_failed"));
+        return;
+      }
+      const fail = (code: string): void => {
+        if (settled) return;
+        settled = true;
+        reject(new Error(code));
+      };
       request.onupgradeneeded = () => {
+        if (settled) {
+          // A blocked caller has already failed. Do not change its schema later.
+          request.transaction?.abort();
+          return;
+        }
         const database = request.result;
         if (!database.objectStoreNames.contains("metadata")) {
           database.createObjectStore("metadata");
@@ -1143,14 +1167,36 @@ export class IndexedDbVaultStorage implements LocalVaultStorage {
         }
       };
       request.onsuccess = () => {
+        finished = true;
         const database = request.result;
-        database.onversionchange = () => database.close();
+        if (settled) {
+          // Blocked requests cannot be canceled; dispose a late connection.
+          database.close();
+          forget();
+          return;
+        }
+        database.onversionchange = () => {
+          forget();
+          database.close();
+        };
+        database.onclose = forget;
+        settled = true;
         resolve(database);
       };
-      request.onerror = () => reject(new Error("vault_storage_open_failed"));
-      request.onblocked = () => reject(new Error("vault_storage_open_blocked"));
+      request.onerror = () => {
+        finished = true;
+        forget();
+        fail("vault_storage_open_failed");
+      };
+      request.onblocked = () => fail("vault_storage_open_blocked");
     });
-    return this.#database;
+    this.#database = opening;
+    // Keep an outstanding blocked request cached until its terminal event,
+    // preventing queued retries. A later explicit operation may retry a failure.
+    void opening.catch(() => {
+      if (finished) forget();
+    });
+    return opening;
   }
 }
 

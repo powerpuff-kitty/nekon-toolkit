@@ -8,7 +8,7 @@ const manifest=JSON.parse(await read('local-vault-extraction.json'));
 
 test('local vault records its exact coordinated source and unavailable production KDF',()=>{
   assert.equal(manifest.sourceRepository,'powerpuff-kitty/nekon');
-  assert.equal(manifest.sourceCommit,'22ed8a9e810e3dab52b4e8dae03d93276d9889a3');
+  assert.equal(manifest.sourceCommit,'c4f72babf0b8c84854c3185ceeed717c8bf1303d');
   assert.equal(manifest.publicationAllowed,false);assert.equal(manifest.productionKdfIncluded,false);
   assert.match(manifest.sourceStatus,/unmerged/);assert.match(manifest.ownership,/not migrated/);
   assert.deepEqual(manifest.runtimeDependencies,[]);assert.equal(manifest.files.length,1);
@@ -16,7 +16,7 @@ test('local vault records its exact coordinated source and unavailable productio
 test('vault source matches the reviewed upstream blob and SHA-256',async()=>{
   const entry=manifest.files[0];assert.equal(entry.path,'packages/client-runtime/src/local-vault.ts');
   const bytes=await read(entry.path);assert.equal(entry.bytes,bytes.length);
-  assert.equal(entry.gitBlob,'8d1d61bf391bfb472d2df4741c6cc7defe871d22');
+  assert.equal(entry.gitBlob,'689533fe33ab8c1e83fe9fa5fc2a1b0b4919925f');
   assert.equal(createHash('sha1').update(`blob ${bytes.length}\0`).update(bytes).digest('hex'),entry.gitBlob);
   assert.equal(createHash('sha256').update(bytes).digest('hex'),entry.sha256);
   assert.doesNotMatch(bytes.toString(),/^import\b/m);
@@ -57,4 +57,18 @@ test('abort settlement cases are preserved and registered in installed vault con
   const cases=(await read('tests/local-vault/consumer.test.mjs')).toString();
   assert.match(cases,/import \{ registerIdbSettlementCases \} from '\.\/idb-settlement\.cases\.mjs'/);
   assert.match(cases,/registerIdbSettlementCases\(test, \{ LocalSecretVault, IndexedDbVaultStorage \}\)/);
+});
+
+// Explicit connection events are regression evidence, not a native storage pass.
+test('connection lifecycle cases and native follow-up remain registered',async()=>{
+  const bytes=await read('tests/local-vault/idb-connection.cases.mjs');
+  assert.equal(createHash('sha1').update(`blob ${bytes.length}\0`).update(bytes).digest('hex'),'04cbc3a4cbedb23288c7dee87047c8a52369ba16');
+  const consumer=(await read('tests/local-vault/consumer.test.mjs')).toString();
+  assert.ok(consumer.includes("from './idb-connection.cases.mjs'"));
+  assert.ok(consumer.includes('registerIdbConnectionCases(test, { IndexedDbVaultStorage })'));
+  const browser=(await read('scripts/check-local-vault-browser.py')).toString();
+  assert.ok(browser.includes("page.goto(origin + '/', timeout=10000)"));
+  assert.ok(browser.includes('indexedDB.open(connectionDb,2)'));
+  assert.ok(browser.includes('indexedDB.deleteDatabase(connectionDb)'));
+  assert.doesNotMatch(browser,/set_content|route\.fulfill|disable-web-security|ignoreHTTPSErrors/);
 });
