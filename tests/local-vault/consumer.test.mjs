@@ -220,3 +220,7 @@ registerIdbSettlementCases(test, { LocalSecretVault, IndexedDbVaultStorage });
 // Manual connection lifecycle events supplement, not replace, native browser tests.
 import { registerIdbConnectionCases } from './idb-connection.cases.mjs';
 registerIdbConnectionCases(test, { IndexedDbVaultStorage });
+
+// Actual vault lifecycle with synthetic storage; not native IndexedDB evidence.
+import { registerDestroyLifecycleCases } from './destroy-lifecycle.cases.mjs';
+registerDestroyLifecycleCases(test, { LocalSecretVault });

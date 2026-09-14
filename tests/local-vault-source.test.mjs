@@ -8,7 +8,7 @@ const manifest=JSON.parse(await read('local-vault-extraction.json'));
 
 test('local vault records its exact coordinated source and unavailable production KDF',()=>{
   assert.equal(manifest.sourceRepository,'powerpuff-kitty/nekon');
-  assert.equal(manifest.sourceCommit,'c4f72babf0b8c84854c3185ceeed717c8bf1303d');
+  assert.equal(manifest.sourceCommit,'b184708ae9a810ee76cb37912cd8fc7d9ed0f903');
   assert.equal(manifest.publicationAllowed,false);assert.equal(manifest.productionKdfIncluded,false);
   assert.match(manifest.sourceStatus,/unmerged/);assert.match(manifest.ownership,/not migrated/);
   assert.deepEqual(manifest.runtimeDependencies,[]);assert.equal(manifest.files.length,1);
@@ -16,7 +16,7 @@ test('local vault records its exact coordinated source and unavailable productio
 test('vault source matches the reviewed upstream blob and SHA-256',async()=>{
   const entry=manifest.files[0];assert.equal(entry.path,'packages/client-runtime/src/local-vault.ts');
   const bytes=await read(entry.path);assert.equal(entry.bytes,bytes.length);
-  assert.equal(entry.gitBlob,'689533fe33ab8c1e83fe9fa5fc2a1b0b4919925f');
+  assert.equal(entry.gitBlob,'7ecaf1835ebbf74d03ca68161a8043b487ff36d2');
   assert.equal(createHash('sha1').update(`blob ${bytes.length}\0`).update(bytes).digest('hex'),entry.gitBlob);
   assert.equal(createHash('sha256').update(bytes).digest('hex'),entry.sha256);
   assert.doesNotMatch(bytes.toString(),/^import\b/m);
@@ -71,4 +71,13 @@ test('connection lifecycle cases and native follow-up remain registered',async()
   assert.ok(browser.includes('indexedDB.open(connectionDb,2)'));
   assert.ok(browser.includes('indexedDB.deleteDatabase(connectionDb)'));
   assert.doesNotMatch(browser,/set_content|route\.fulfill|disable-web-security|ignoreHTTPSErrors/);
+});
+
+// Per-instance destruction admission is separate from native storage guarantees.
+test('shared destruction lifecycle cases remain registered in installed consumers',async()=>{
+  const bytes=await read('tests/local-vault/destroy-lifecycle.cases.mjs');
+  assert.equal(createHash('sha1').update(`blob ${bytes.length}\0`).update(bytes).digest('hex'),'13f1ef24c12ada6353a43a5b2947129e89e13fad');
+  const consumer=(await read('tests/local-vault/consumer.test.mjs')).toString();
+  assert.ok(consumer.includes("from './destroy-lifecycle.cases.mjs'"));
+  assert.ok(consumer.includes('registerDestroyLifecycleCases(test, { LocalSecretVault })'));
 });

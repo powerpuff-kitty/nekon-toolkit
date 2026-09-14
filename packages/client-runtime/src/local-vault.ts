@@ -156,6 +156,7 @@ export class LocalSecretVault {
   #lockDeadline: number | null = null;
   #sessionGeneration = 0;
   #activeOperations = 0;
+  #destruction: Promise<void> | undefined;
   readonly #drainWaiters = new Set<() => void>();
 
   constructor(options: LocalSecretVaultOptions) {
@@ -674,10 +675,22 @@ export class LocalSecretVault {
   }
 
   async destroy(): Promise<void> {
+    if (this.#destruction !== undefined) return this.#destruction;
     if (this.#state === "destroyed") return;
-    await this.lockAndDrain();
-    await this.#storage.clear();
-    this.#state = "destroyed";
+    // Revoke immediately and close transition admission through drain and clear.
+    // Concurrent callers share the same operation, including its failure.
+    const destruction = this.lockAndDrain().then(async () => {
+      await this.#storage.clear();
+      this.#state = "destroyed";
+    });
+    this.#destruction = destruction;
+    try {
+      await destruction;
+    } finally {
+      // A failed clear leaves the vault locked/corrupt. Recovery is explicit;
+      // neither deletion nor key creation is automatically retried.
+      this.#destruction = undefined;
+    }
   }
 
   async #sealRecord(
@@ -897,6 +910,7 @@ export class LocalSecretVault {
   }
 
   #requireState(expected: LocalVaultState): void {
+    if (this.#destruction !== undefined) throw new Error("vault_locked");
     if (this.#state !== expected) {
       throw new Error(`vault_state_${this.#state}`);
     }
