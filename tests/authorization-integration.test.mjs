@@ -16,7 +16,7 @@ test('default package lane registers both transport regressions and authorizatio
     'consumer.test.mjs', 'transport.test.mjs', 'lifecycle.cases.mjs',
     'http-semantics.cases.mjs', 'authorization.test.mjs',
     'enrollment/consumer.test.mjs', 'enrollment-storage/consumer.test.mjs', 'enrollment-proof/consumer.test.mjs',
-    'tests/developer-workbench/workbench.test.mjs',
+    'tests/developer-workbench/workbench.test.mjs', 'local-vault/consumer.test.mjs',
   ]);
   for (const path of ['tests/transport/http-semantics.cases.mjs', 'tests/application-authorization/consumer.test.mjs']) {
     assert.ok(source.includes(`'${path}'`));
@@ -42,7 +42,7 @@ test('integration retains strict consumers, both examples and isolated package r
   assert.match(source, /delete env\.NEKON_TRANSPORT_TEST_MODULE;/);
   assert.match(source, /'--offline', '--ignore-scripts'/);
   assert.match(source, /'--noEmit', '--strict', '--skipLibCheck', 'false'/);
-  assert.ok(source.includes("'client-runtime': 112 * 1024, sdk: 48000"));
+  assert.ok(source.includes("'client-runtime': 160 * 1024, sdk: 48000"));
 });
 
 for (const args of [['--skip'], ['--http', '--http'], ['--http', '--skip']]) {

@@ -38,6 +38,7 @@ See the [workbench guide](examples/developer-workbench/README.md).
 | `@nekon/sdk/application-enrollment` | Resumable four-state coordinator and typed adapter ports | Requires trusted device, encrypted vault and activation adapters |
 | `@nekon/sdk/application-enrollment-storage` | Service/device-bound store adapter | Proposed V2 format; explicit opt-in, no automatic migration |
 | `@nekon/sdk/application-enrollment-proof` | Existing V1 proof construction and signature self-check | Signer retains private-key ownership; no HTTP or Room authority |
+| `@nekon/sdk/local-vault` | Existing encrypted vault and IndexedDB storage source | Approved Argon2id provider required; production browser integration pending |
 
 The enrollment entries also have matching runtime subpaths and share one
 implementation. The authorization resource is also available through
@@ -47,7 +48,7 @@ same class and types rather than implementing a second client.
 All packages remain unpublished, private and licensing-gated. Transport and
 resource sources are staged from pinned upstream candidates, not a production
 release. The coordinator, storage binding and proof helper are available, but the
-complete browser enrollment factory, production vault/device adapters, full SDK
+complete browser enrollment factory, production KDF/device integration, full SDK
 root, verified Room owner, Rust/WASM integration and messenger migration remain
 pending. A local source merge does not approve a production rollout.
 See [licensing](LICENSE.md) and [security](SECURITY.md).
@@ -82,7 +83,7 @@ transport, transport-regression and authorization loopback tests. The default
 opens no test servers. Partial artifacts are removed after build failure.
 
 No check deploys or publishes packages. See the
-[latest integration checkpoint](docs/workbench-main-integration-2026-09-12.md)
+[latest integration checkpoint](docs/local-vault-docs-integration-2026-09-13.md)
 for exact results, source-reconstruction details and unrun release gates.
 
 ## Browser checks
@@ -109,6 +110,7 @@ Existing token/event/transport browser runners remain available separately.
 [Enrollment coordinator](docs/application-enrollment-extraction.md) ·
 [Bound storage](docs/application-enrollment-storage.md) ·
 [Proof ownership](docs/application-enrollment-proof.md) ·
+[Local encrypted vault](docs/local-vault-extraction.md) ·
 [Token guide](packages/tokens/README.md) · [Architecture](ARCHITECTURE.md) ·
 [Design](DESIGN.md) · [Roadmap](ROADMAP.md) · [Contributing](CONTRIBUTING.md)
 
@@ -139,3 +141,22 @@ node scripts/sync-project.mjs --apply
 
 It preserves existing fields and rejects ambiguous inventories before writes.
 See [Project synchronization](docs/project-sync.md). No GitHub Actions are added.
+
+## Local-vault verification status
+
+The local-vault source remains a draft integration. Its two export references and
+ownership guide are generated with the rest of the portal; the host-composition
+example is type-checked, not executed. Native IndexedDB browser verification is
+still blocked at normal page navigation. Passing reference tests is not a browser
+storage or production Argon2/WASM result.
+
+With the separately provisioned pinned reference dependency:
+
+```sh
+NEKON_VAULT_ARGON2_TESTS=1 node scripts/verify-application-event.mjs --http
+python3 scripts/check-local-vault-browser.py --chromium /path/to/chromium
+```
+
+The second command is a separate real-browser gate and currently fails in this
+execution environment. No navigation-policy workaround or fallback KDF is used.
+See [the reconciliation checkpoint](docs/local-vault-docs-integration-2026-09-13.md).

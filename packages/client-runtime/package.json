@@ -35,6 +35,10 @@
     "./application-enrollment-proof": {
       "types": "./dist/application-enrollment-proof.d.ts",
       "import": "./dist/application-enrollment-proof.js"
+    },
+    "./local-vault": {
+      "types": "./dist/local-vault.d.ts",
+      "import": "./dist/local-vault.js"
     }
   },
   "engines": {

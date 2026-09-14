@@ -9,8 +9,9 @@ ESM and declarations. It has no communication or UI-framework dependencies.
 low-level transport and existing application-authorization resource. `packages/sdk`
 exposes the typed event wrapper and an identical authorization-resource re-export.
 Runtime and SDK enrollment entries expose the same coordinator, optional bound
-storage adapter and V1 proof helper. The full SDK root, concrete production vault,
-browser factory, verified Room controller and Rust/WASM integration remain absent.
+storage adapter and V1 proof helper. The local-vault subpath also stages the existing LocalSecretVault and IndexedDB
+storage implementation. The full SDK root, production Argon2/WASM provider,
+browser factory and verified Room controller remain absent.
 
 Transport owns API-version headers, configured session boundaries, bounded local
 response consumption and target-bound WebSocket ticket negotiation. Resource
@@ -57,7 +58,7 @@ The backend consumes shared protocol contracts, not browser/UI implementation.
 
 `application-event-extraction.json`, `transport-extraction.json` and
 `authorization-extraction.json` pin their respective exact upstream source slices.
-The enrollment, enrollment-storage and enrollment-proof extraction manifests
+The local-vault, enrollment, enrollment-storage and enrollment-proof extraction manifests
 retain their independently reviewed coordinator, storage and proof sources.
 Transport retains the latest coordinated HTTP fixes; authorization retains its
 independent unchanged resource/helper pin. Do not reset one manifest merely to

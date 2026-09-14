@@ -81,3 +81,12 @@ encrypted exchange, component-library/framework quickstarts, full hosted quota/
 retention policies, production revocation and complete error coverage remain open
 under #13 and their owning issues. Publishing the portal requires a separate,
 explicit deployment task. Keep #13 open.
+
+## Local-vault draft integration
+
+The catalog includes both local-vault export paths and a guide that distinguishes
+fast state-machine fixtures, the optional native Argon2 reference, and the blocked
+real IndexedDB browser gate. Its host-composition example is a second compile-only
+contract; both existing executable examples remain unchanged. The portal currently
+has 11 guides and 17 generated references. Documentation does not remove #38/#39
+browser, production KDF or enrollment-factory requirements.

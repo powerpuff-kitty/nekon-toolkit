@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "snapshot": "2026-09-12",
+  "snapshot": "2026-09-13",
   "title": "NEKON Developer Docs",
   "packages": [
     "tokens",
@@ -79,6 +79,13 @@
       "credentials": "Private keys remain signer-owned; use only the exact persisted pending material."
     },
     {
+      "specifier": "@nekon/client-runtime/local-vault",
+      "summary": "Local encrypted records, lifecycle, revision checks and the IndexedDB storage adapter.",
+      "boundary": "Source preview, not a complete browser vault integration. The host must supply approved Argon2id key derivation; native IndexedDB verification remains blocked.",
+      "environment": "Web Crypto host; IndexedDbVaultStorage additionally requires a browser with IndexedDB. Node tests use synthetic storage.",
+      "credentials": "Unlock secrets and plaintext are sensitive local data, not network credentials. There is no default KDF or private data-key export."
+    },
+    {
       "specifier": "@nekon/sdk/application-event",
       "summary": "Canonical event encoding and inspection.",
       "boundary": "Plaintext serialization is not encryption, identity verification or Room authority.",
@@ -112,6 +119,13 @@
       "boundary": "A valid local signature does not establish service approval or Room authority.",
       "environment": "Browser or Node 22+ with Web Crypto Ed25519 and a trusted signer.",
       "credentials": "Private keys remain signer-owned; use only the exact persisted pending material."
+    },
+    {
+      "specifier": "@nekon/sdk/local-vault",
+      "summary": "Local encrypted records, lifecycle, revision checks and the IndexedDB storage adapter.",
+      "boundary": "Source preview, not a complete browser vault integration. The host must supply approved Argon2id key derivation; native IndexedDB verification remains blocked.",
+      "environment": "Web Crypto host; IndexedDbVaultStorage additionally requires a browser with IndexedDB. Node tests use synthetic storage.",
+      "credentials": "Unlock secrets and plaintext are sensitive local data, not network credentials. There is no default KDF or private data-key export."
     }
   ],
   "examples": [
@@ -140,6 +154,15 @@
       "mode": "typecheck",
       "environment": "Compile-only; not an executable browser onboarding example",
       "credentials": "Trusted vault, device and activation adapters must be supplied by the host.",
+      "testPath": "scripts/verify-application-event.mjs"
+    },
+    {
+      "id": "vault-composition",
+      "title": "Compose an existing vault with enrollment storage",
+      "path": "tests/local-vault/composition.ts",
+      "mode": "typecheck",
+      "environment": "Compile-only contract; not executable browser onboarding or a provided KDF.",
+      "credentials": "Host-provided unlock secret and approved Argon2id derivation; never use the fast test derivation for passwords.",
       "testPath": "scripts/verify-application-event.mjs"
     }
   ],
@@ -184,10 +207,15 @@
         {
           "kind": "list",
           "items": [
-            "Available: semantic design tokens, event encoding, low-level HTTP/WebSocket transport, prepared authorization APIs, enrollment coordination, optional bound storage, and proof construction.",
-            "Not included: the complete browser enrollment factory, production vault and device adapters, verified Room/MLS integration, hosted provisioning, and the messenger migration.",
+            "Available: semantic design tokens, event encoding, low-level HTTP/WebSocket transport, prepared authorization APIs, enrollment coordination, optional bound storage, proof construction, and local-vault source.",
+            "Not included: the complete browser enrollment factory, production Argon2/WASM and integrated device adapters, verified Room/MLS integration, hosted provisioning, and the messenger migration.",
             "The local workbench is a plaintext event inspector, not a messaging service. Use synthetic data only."
           ]
+        },
+        {
+          "kind": "link",
+          "target": "local-vault",
+          "text": "Understand local vault and key ownership"
         },
         {
           "kind": "heading",
@@ -422,7 +450,7 @@
         },
         {
           "kind": "paragraph",
-          "text": "The vault must provide encryption, authenticated metadata, real persistence and atomic compare-and-swap. Local retirement clears an eligible completed draft, not the service binding or remote identity. Production vault/KDF, Worker/device and browser factory adapters remain outside this preview."
+          "text": "The vault must provide encryption, authenticated metadata, real persistence and atomic compare-and-swap. Local retirement clears an eligible completed draft, not the service binding or remote identity. Local-vault source is available separately; production Argon2/WASM, Worker/device and browser factory integration remain unverified."
         },
         {
           "kind": "heading",
@@ -436,6 +464,77 @@
           "kind": "link",
           "target": "boundaries",
           "text": "Review the remaining production gates"
+        }
+      ]
+    },
+    {
+      "id": "local-vault",
+      "title": "Local vault and key ownership",
+      "summary": "Compose encrypted persistence without confusing a tested reference KDF with a production browser integration.",
+      "blocks": [
+        {
+          "kind": "paragraph",
+          "text": "The SDK and runtime local-vault entries expose the same LocalSecretVault, IndexedDbVaultStorage and V1 policy. These are unpublished source previews. The complete browser enrollment factory, production Argon2/WASM provider and device lifecycle integration are not supplied by these exports."
+        },
+        {
+          "kind": "heading",
+          "text": "The host must provide key derivation"
+        },
+        {
+          "kind": "paragraph",
+          "text": "Supply Argon2id-v1 with the existing policy: 64 MiB of memory, three iterations, parallelism one and a 32-byte output. VaultKeyDeriver is a function contract, not proof that the supplied implementation follows that policy. The runtime ships no fallback derivation. Never use the fast test-only SHA-256 derivation for passwords."
+        },
+        {
+          "kind": "heading",
+          "text": "Durability and ownership"
+        },
+        {
+          "kind": "list",
+          "items": [
+            "LocalSecretVault encrypts records before handing them to storage. IndexedDbVaultStorage implements the storage interface; injected alternatives must preserve atomic revision checks.",
+            "Keep operation arguments immutable until settlement. A successful read transfers an owned plaintext byte array to the caller; clear it after use. Array clearing cannot erase all JavaScript strings or provider copies.",
+            "lock() revokes this vault session locally. lockAndDrain() also waits for in-flight work. Wire suspension and trusted activity into the host lifecycle; this does not perform remote revocation.",
+            "Secret rewrap updates the wrapping header, not every stored record. Local destruction or enrollment retirement is not remote logout, Room membership removal or message deletion."
+          ]
+        },
+        {
+          "kind": "heading",
+          "text": "Compose with an already initialized enrollment namespace"
+        },
+        {
+          "kind": "example",
+          "id": "vault-composition"
+        },
+        {
+          "kind": "paragraph",
+          "text": "The example is type-checked against the installed packages, not executed. The host must supply the real storage, derivation, unlock secret and expected binding. initializeNewVault: false deliberately prevents adopting an existing empty namespace as newly created. V2 enrollment binding remains proposed and explicit opt-in; no automatic V1 migration is provided."
+        },
+        {
+          "kind": "heading",
+          "text": "Three different verification boundaries"
+        },
+        {
+          "kind": "list",
+          "items": [
+            "Default packaged tests use the actual vault and AES-GCM with synthetic in-memory atomic storage and a fast test-only derivation. They exercise state transitions, not browser persistence or password hardening.",
+            "The optional NEKON_VAULT_ARGON2_TESTS=1 lane uses separately provisioned argon2-cffi 25.1.0 as a native Argon2id reference. Python is test tooling, never a package runtime dependency or a production WASM substitute.",
+            "The native IndexedDB/WebCrypto runner is a separate gate. Normal loopback page navigation currently fails with ERR_BLOCKED_BY_ADMINISTRATOR before its assertions run. No successful browser-storage result, policy bypass, production KDF or complete enrollment flow is implied by the other test lanes."
+          ]
+        },
+        {
+          "kind": "link",
+          "target": "ref-nekon-sdk-local-vault",
+          "text": "Inspect generated local-vault contracts"
+        },
+        {
+          "kind": "link",
+          "target": "enrollment",
+          "text": "Return to enrollment coordination"
+        },
+        {
+          "kind": "link",
+          "target": "boundaries",
+          "text": "Review remaining release gates"
         }
       ]
     },
@@ -580,6 +679,26 @@
       "code": "enterprise_authorization_aborted",
       "module": "packages/client-runtime/dist/application-enrollment-proof.js",
       "guidance": "Local proof observation was canceled. The coordinator owns any explicit recovery using durable material."
+    },
+    {
+      "code": "vault_locked",
+      "module": "packages/client-runtime/dist/local-vault.js",
+      "guidance": "Unlock through the trusted host flow before using this local session. Do not bypass the lifecycle guard or automatically expose saved secrets."
+    },
+    {
+      "code": "vault_unlock_failed",
+      "module": "packages/client-runtime/dist/local-vault.js",
+      "guidance": "Do not log the unlock secret or raw provider error. This generic failure does not distinguish a wrong secret from other unlock failures."
+    },
+    {
+      "code": "vault_record_corrupt",
+      "module": "packages/client-runtime/dist/local-vault.js",
+      "guidance": "Stop exposing the record and retain ciphertext for an explicit recovery decision. Do not silently repair, delete or reinitialize the namespace."
+    },
+    {
+      "code": "vault_record_revision_conflict",
+      "module": "packages/client-runtime/dist/local-vault.js",
+      "guidance": "A stale or concurrent write lost its revision check. Let the owning operation decide how to reread and reconcile; do not replay with fresh authorization material."
     }
   ]
 }

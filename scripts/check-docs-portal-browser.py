@@ -21,6 +21,8 @@ def main() -> None:
     if version('playwright') != '1.57.0':
         raise SystemExit('Use the pinned scripts/browser-requirements.txt environment.')
     html = (ROOT / 'docs/portal/dist/index.html').read_text(encoding='utf-8')
+    catalog = json.loads((ROOT / 'docs/portal/catalog.json').read_text(encoding='utf-8'))
+    expected_pages = len(catalog['pages']) + len(catalog['modules'])
     checks: list[str] = []
     network: list[str] = []
     errors: list[str] = []
@@ -53,7 +55,7 @@ def main() -> None:
             check('starts on one visible guide with an accurate maturity label',
                   page.locator('#start').is_visible() and page.get_by_text('UNPUBLISHED SOURCE PREVIEW', exact=True).is_visible())
             check('all generated and curated pages have a navigation entry',
-                  page.locator('[data-page]').count() == 25 and page.locator('[data-nav]').count() == 25)
+                  page.locator('[data-page]').count() == expected_pages and page.locator('[data-nav]').count() == expected_pages)
             check('search has an explicit accessible label', page.get_by_label('Search documentation').count() == 1)
             page.get_by_role('link', name='Run an application-event round trip').click()
             page.locator('#events').wait_for(state='visible')
@@ -99,6 +101,21 @@ def main() -> None:
             check('compile-only composition is not described as an executable onboarding flow',
                   page.locator('#enrollment').get_by_text('COMPILE-ONLY CONTRACT',exact=True).is_visible() and
                   'declare const vault' in page.locator('#enrollment pre').inner_text())
+            page.locator('[data-nav="local-vault"]').click()
+            page.locator('#local-vault').wait_for(state='visible')
+            vault_text = page.locator('#local-vault').inner_text()
+            check('vault guide labels blocked browser storage and required KDF separately',
+                  'ERR_BLOCKED_BY_ADMINISTRATOR' in vault_text and 'no fallback derivation' in vault_text)
+            check('vault composition is compile-only with host-owned derivation',
+                  page.locator('#local-vault').get_by_text('COMPILE-ONLY CONTRACT', exact=True).is_visible()
+                  and 'declare const deriveKey: VaultKeyDeriver' in page.locator('#local-vault pre').inner_text())
+            search.fill('LocalSecretVault')
+            check('vault API is searchable in generated references',
+                  page.locator('#searchResults a[href="#ref-nekon-sdk-local-vault"]').count() == 1)
+            page.locator('#searchResults a[href="#ref-nekon-sdk-local-vault"]').click()
+            page.locator('#ref-nekon-sdk-local-vault').wait_for(state='visible')
+            check('vault class contracts are generated from the shared runtime',
+                  'class LocalSecretVault' in page.locator('#ref-nekon-sdk-local-vault').inner_text())
             page.locator('[data-nav="errors"]').click()
             page.locator('#errors').wait_for(state='visible')
             check('error reference documents the limitation and recovery guidance',
@@ -135,7 +152,7 @@ def main() -> None:
             try:
                 static = nojs.new_page()
                 static.set_content(html)
-                check('without JavaScript all 25 pages remain readable',static.locator('[data-page]:visible').count() == 25)
+                check('without JavaScript every documented page remains readable',static.locator('[data-page]:visible').count() == expected_pages)
                 check('without JavaScript search stays disabled with an explicit fallback hint',
                       static.locator('#searchHelp').is_visible() and static.locator('#search').is_disabled())
             finally:

@@ -2,10 +2,11 @@
 
 Implemented subpaths: `@nekon/client-runtime/application-event`, `transport`,
 `application-authorization`, `application-enrollment`,
-`application-enrollment-storage`, and `application-enrollment-proof`, all under
+`application-enrollment-storage`, `application-enrollment-proof`, and `local-vault`, all under
 the `@nekon/client-runtime` package. No framework, CSS, external
-runtime dependency or WASM is required for these slices. The root runtime, vault,
-Room state machine, MLS and synchronization owners are not included. Packages
+runtime dependency is added. The local-vault entry requires a host-provided
+Argon2id implementation; its production WASM provider is not included. The root
+runtime, Room state machine, MLS and synchronization owners are not included. Packages
 remain private, unpublished and licensing-gated at `0.1.0-extraction.0`.
 
 ## Low-level transport
@@ -126,8 +127,34 @@ Bound storage uses an explicit opt-in proposed V2 envelope. Existing V1 records,
 missing bindings and mismatched context are retained and rejected, not silently
 migrated. Initialization is allowed only after actual vault creation; retirement
 does not discard the binding or revoke anything remotely. Do not use test storage
-or placeholder credentials in production. The browser factory, actual vault/KDF,
-Worker and MLS adapters remain outside these source previews.
+or placeholder credentials in production. The browser factory, production Argon2/WASM provider,
+Worker and MLS integration remain outside these source previews.
+
+## Local encrypted vault
+
+`local-vault` exposes the existing `LocalSecretVault`, `IndexedDbVaultStorage`,
+immutable V1 policy and typed storage/KDF contracts. It composes with the enrollment
+bound-store adapter. The matching SDK subpath re-exports these exact definitions.
+This is low-level trusted-host infrastructure, not a ready-to-use browser login.
+
+Supply the approved Argon2id-v1 derivation (64 MiB, three iterations, parallelism
+one, 32-byte output). There is no default derivation or cryptographic fallback.
+The function contract cannot prove a supplied provider uses the approved algorithm.
+Never copy a fast test-only derivation into an application. The actual browser
+WASM provider and interoperability checks remain separate requirements.
+
+Create/unlock, encrypted reads/writes, revision-checked batches, authenticated
+tombstones, secret rewrap, lock/drain and local destroy retain their existing
+semantics. Keep operation inputs immutable until settlement. Plaintext returned
+by read() belongs to the caller and should be cleared after use; clearing an array
+does not erase every JavaScript/provider/browser copy. Host lifecycle integration
+must trigger suspension/locking. These operations provide no remote revocation,
+Room membership or protection against compromised endpoint JavaScript.
+
+The IndexedDB class is staged source. Real persistence tests have not passed in
+this environment: default loopback navigation was blocked by browser policy.
+Do not treat in-memory CAS tests or independent Argon2 reference tests as browser
+WASM/IndexedDB evidence. See the repository vault guide for exact commands and gates.
 
 ## Source ownership and verification
 

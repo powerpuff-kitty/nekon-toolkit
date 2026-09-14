@@ -11,6 +11,11 @@ const args = process.argv.slice(2);
 if (args.length > 1 || (args.length === 1 && args[0] !== '--http')) {
   throw new Error('Usage: verify-application-event.mjs [--http]');
 }
+const argon2Mode = process.env.NEKON_VAULT_ARGON2_TESTS;
+if (argon2Mode !== undefined && argon2Mode !== '0' && argon2Mode !== '1') {
+  throw new Error('NEKON_VAULT_ARGON2_TESTS must be 0 or 1 when provided');
+}
+const includeArgon2 = process.env.NEKON_VAULT_ARGON2_TESTS === '1';
 const root = fileURLToPath(new URL('../', import.meta.url));
 const directory = await mkdtemp(join(tmpdir(), 'nekon-client-consumer-'));
 const rootFile = path => join(root, path);
@@ -54,11 +59,11 @@ try {
     'client-runtime': ['application-event-payload', 'client-transport', 'client-request-transport', 'bounded-response',
       'application-device-authorization-api-resource', 'client-binary-codec', 'client-api-error', 'client-response-validation',
       'application-enrollment', 'application-enrollment-coordinator', 'application-enrollment-validation', 'application-enrollment-types',
-      'application-enrollment-storage', 'application-enrollment-bound-vault', 'application-enrollment-proof'],
-    sdk: ['application-event', 'application-authorization', 'application-enrollment', 'application-enrollment-storage', 'application-enrollment-proof'],
+      'application-enrollment-storage', 'application-enrollment-bound-vault', 'application-enrollment-proof', 'local-vault'],
+    sdk: ['application-event', 'application-authorization', 'application-enrollment', 'application-enrollment-storage', 'application-enrollment-proof', 'local-vault'],
   };
-  // Preserve #37's existing enrollment artifact budget; HTTP body limits are unrelated.
-  const budgets = { 'client-runtime': 112 * 1024, sdk: 48000 };
+  // Preserve #39's existing vault artifact budget; HTTP and KDF limits are unrelated.
+  const budgets = { 'client-runtime': 160 * 1024, sdk: 48000 };
   let fileCount = 0;
   for (const [leaf, names] of Object.entries(modules)) {
     const packed = JSON.parse(execute('npm', ['pack', '--ignore-scripts', '--json', '--pack-destination', directory], rootFile(`packages/${leaf}`), true));
@@ -80,8 +85,8 @@ try {
     assert.equal(pkg.license, 'UNLICENSED');
     assert.equal(pkg.sideEffects, false);
     assert.deepEqual(Object.keys(pkg.exports), leaf === 'sdk'
-      ? ['./application-event', './application-authorization', './application-enrollment', './application-enrollment-storage', './application-enrollment-proof']
-      : ['./application-event', './transport', './application-authorization', './application-enrollment', './application-enrollment-storage', './application-enrollment-proof']);
+      ? ['./application-event', './application-authorization', './application-enrollment', './application-enrollment-storage', './application-enrollment-proof', './local-vault']
+      : ['./application-event', './transport', './application-authorization', './application-enrollment', './application-enrollment-storage', './application-enrollment-proof', './local-vault']);
     assert.deepEqual(pkg.dependencies ?? {}, leaf === 'sdk' ? { '@nekon/client-runtime': '0.1.0-extraction.0' } : {});
     assert.match(pkg.scripts.prepublishOnly, /Publication disabled/);
   }
@@ -101,9 +106,11 @@ try {
   await cp(rootFile('tests/enrollment'), join(directory, 'enrollment'), { recursive: true });
   await cp(rootFile('tests/enrollment-storage'), join(directory, 'enrollment-storage'), { recursive: true });
   await cp(rootFile('tests/enrollment-proof'), join(directory, 'enrollment-proof'), { recursive: true });
+  await cp(rootFile('tests/local-vault'), join(directory, 'local-vault'), { recursive: true });
   const tests = ['consumer.test.mjs', 'transport.test.mjs', 'lifecycle.cases.mjs', 'http-semantics.cases.mjs', 'authorization.test.mjs',
     'enrollment/consumer.test.mjs', 'enrollment-storage/consumer.test.mjs', 'enrollment-proof/consumer.test.mjs',
-    'tests/developer-workbench/workbench.test.mjs'];
+    'tests/developer-workbench/workbench.test.mjs', 'local-vault/consumer.test.mjs'];
+  if (includeArgon2) tests.push('local-vault/argon2.cases.mjs');
   if (args[0] === '--http') {
     await cp(rootFile('tests/transport/http.cases.mjs'), join(directory, 'http.cases.mjs'));
     await cp(rootFile('tests/transport/http-semantics-native.cases.mjs'), join(directory, 'http-semantics-native.cases.mjs'));
@@ -136,7 +143,7 @@ try {
   execute(existsSync(localTsc) ? process.execPath : 'tsc', [
     ...(existsSync(localTsc) ? [localTsc] : []), '--noEmit', '--strict', '--skipLibCheck', 'false',
     '--target', 'ES2024', '--module', 'NodeNext', '--moduleResolution', 'NodeNext', 'consumer.ts', 'transport.ts', 'authorization.ts',
-    'enrollment/consumer.ts', 'enrollment-storage/consumer.ts', 'enrollment-proof/consumer.ts', 'enrollment/composition.ts',
+    'enrollment/consumer.ts', 'enrollment-storage/consumer.ts', 'enrollment-proof/consumer.ts', 'enrollment/composition.ts', 'local-vault/consumer.ts', 'local-vault/composition.ts',
   ]);
   for (const example of ['example.mjs', 'authorization-example.mjs']) {
     console.log(execute(process.execPath, [example]).trim());
@@ -155,6 +162,8 @@ try {
     if (typeof enrollment.ApplicationEnrollmentCoordinator !== 'function' ||
         typeof storage.openBoundApplicationEnrollmentVault !== 'function' ||
         typeof proof.createEnterpriseAuthorizationRedemptionWithSigner !== 'function') throw new Error('Unexpected enrollment exports');
+    const vault = await import('@nekon/sdk/local-vault');
+    if (typeof vault.LocalSecretVault !== 'function' || typeof vault.IndexedDbVaultStorage !== 'function') throw new Error('Unexpected vault exports');
     const helpers = ['bounded-response', 'client-binary-codec', 'client-api-error', 'client-response-validation',
       'application-enrollment-validation', 'application-enrollment-types', 'application-enrollment-coordinator', 'application-enrollment-bound-vault'];
     for (const specifier of helpers.flatMap(name => ['@nekon/client-runtime/dist/' + name + '.js', '@nekon/client-runtime/' + name])) {
@@ -178,6 +187,8 @@ try {
   }
   await mkdir(join(directory, 'tests/enrollment'), { recursive: true });
   await cp(rootFile('tests/enrollment/composition.ts'), join(directory, 'tests/enrollment/composition.ts'));
+  await mkdir(join(directory, 'tests/local-vault'), { recursive: true });
+  await cp(rootFile('tests/local-vault/composition.ts'), join(directory, 'tests/local-vault/composition.ts'));
   await cp(rootFile('tests/docs'), join(directory, 'tests/docs'), { recursive: true });
   console.log(execute(process.execPath, ['scripts/build-docs-portal.mjs']));
   execute(process.execPath, ['scripts/build-docs-portal.mjs'], root);
@@ -187,7 +198,7 @@ try {
       `Docs artifact ${artifact} differs between installed and local packages`);
   }
   console.log(execute(process.execPath, ['--test', 'tests/docs/consumer.cases.mjs']));
-  console.log(`PASS: deterministic clean builds, 2 tarballs / ${fileCount} allowlisted files, offline install, event/transport/lifecycle/authorization/enrollment/workbench consumer suites, strict types, both synthetic examples and generated docs. Native HTTP: ${args[0] === '--http' ? 'included' : 'not run'}. No registry publication.`);
+  console.log(`PASS: deterministic clean builds, 2 tarballs / ${fileCount} allowlisted files, offline install, event/transport/lifecycle/authorization/enrollment/workbench consumer suites, strict types, both synthetic examples and generated docs. Argon2 reference: ${includeArgon2 ? 'included' : 'not run'}. Native HTTP: ${args[0] === '--http' ? 'included' : 'not run'}. No registry publication.`);
 } finally {
   await rm(directory, { recursive: true, force: true });
 }

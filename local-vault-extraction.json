@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "sourceRepository": "powerpuff-kitty/nekon",
+  "sourceCommit": "b184708ae9a810ee76cb37912cd8fc7d9ed0f903",
+  "sourceStatus": "unmerged coordinated candidate; not deployed",
+  "publicationAllowed": false,
+  "ownership": "private consumer not migrated; no independent vault implementation",
+  "runtimeDependencies": [],
+  "productionKdfIncluded": false,
+  "files": [
+    {
+      "path": "packages/client-runtime/src/local-vault.ts",
+      "bytes": 46395,
+      "gitBlob": "7ecaf1835ebbf74d03ca68161a8043b487ff36d2",
+      "sha256": "d7c06933157949cf9b8a2738206762540c8589cce5993c13a6607a1269d9defa"
+    }
+  ]
+}

@@ -167,8 +167,8 @@ test('documented examples remain registered for execution or type checking in th
    assert.ok(gate.includes(`['${example.path}', '${destination}']`));
    assert.ok(gate.includes("for (const example of ['example.mjs', 'authorization-example.mjs'])"));
   } else {
-   assert.equal(example.path,'tests/enrollment/composition.ts');
-   assert.ok(gate.includes("'enrollment/composition.ts'"));
+   assert.ok(['tests/enrollment/composition.ts','tests/local-vault/composition.ts'].includes(example.path));
+   assert.ok(gate.includes(`'${example.path.slice('tests/'.length)}'`));
   }
  }
 });
